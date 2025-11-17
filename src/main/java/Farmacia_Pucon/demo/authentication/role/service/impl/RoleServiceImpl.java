@@ -1,10 +1,10 @@
-package Farmacia_Pucon.demo.role.service.impl;
+package Farmacia_Pucon.demo.authentication.role.service.impl;
 
-import Farmacia_Pucon.demo.role.domain.Permission;
-import Farmacia_Pucon.demo.role.domain.Role;
-import Farmacia_Pucon.demo.role.repository.PermissionRepository;
-import Farmacia_Pucon.demo.role.repository.RoleRepository;
-import Farmacia_Pucon.demo.role.service.RoleService;
+import Farmacia_Pucon.demo.authentication.role.domain.Permission;
+import Farmacia_Pucon.demo.authentication.role.domain.Role;
+import Farmacia_Pucon.demo.authentication.role.repository.PermissionRepository;
+import Farmacia_Pucon.demo.authentication.role.repository.RoleRepository;
+import Farmacia_Pucon.demo.authentication.role.service.RoleService;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;

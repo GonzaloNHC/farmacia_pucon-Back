@@ -1,6 +1,6 @@
-package Farmacia_Pucon.demo.role.service;
+package Farmacia_Pucon.demo.authentication.role.service;
 
-import Farmacia_Pucon.demo.role.domain.Role;
+import Farmacia_Pucon.demo.authentication.role.domain.Role;
 import java.util.List;
 
 public interface RoleService {

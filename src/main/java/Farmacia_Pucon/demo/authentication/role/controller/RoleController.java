@@ -1,8 +1,8 @@
-package Farmacia_Pucon.demo.role.controller;
+package Farmacia_Pucon.demo.authentication.role.controller;
 
-import Farmacia_Pucon.demo.role.domain.Role;
-import Farmacia_Pucon.demo.role.dto.RoleRequestDTO;
-import Farmacia_Pucon.demo.role.service.RoleService;
+import Farmacia_Pucon.demo.authentication.role.domain.Role;
+import Farmacia_Pucon.demo.authentication.role.dto.RoleRequestDTO;
+import Farmacia_Pucon.demo.authentication.role.service.RoleService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

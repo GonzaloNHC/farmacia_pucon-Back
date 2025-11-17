@@ -1,6 +1,6 @@
-package Farmacia_Pucon.demo.role.repository;
+package Farmacia_Pucon.demo.authentication.role.repository;
 
-import Farmacia_Pucon.demo.role.domain.Permission;
+import Farmacia_Pucon.demo.authentication.role.domain.Permission;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PermissionRepository extends JpaRepository<Permission, Long> {

@@ -1,4 +1,4 @@
-package Farmacia_Pucon.demo.role.dto;
+package Farmacia_Pucon.demo.authentication.role.dto;
 
 import java.util.List;
 
