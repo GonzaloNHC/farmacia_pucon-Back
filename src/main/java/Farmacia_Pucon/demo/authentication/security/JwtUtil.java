@@ -2,11 +2,12 @@ package Farmacia_Pucon.demo.authentication.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
-import java.util.Date;
-import java.util.Set;
+import javax.crypto.SecretKey;
+import java.util.*;
+import java.util.function.Function;
 
 @Component
 public class JwtUtil {
@@ -14,48 +15,85 @@ public class JwtUtil {
     private final String SECRET = "UnaClaveMuyLargaYSecretaQueCambiaLuego_1234567890";
     private final long EXPIRATION = 86400000; // 1 día
 
-    private Key getSigningKey() {
+    private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
-    // ===================== GENERAR TOKEN =====================
-    public String generateToken(String username, Set<String> roles) {
+    // EXTRAER USERNAME DESDE TOKEN
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    // EXTRAER EXPIRACIÓN
+    public Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+    // EXTRAER TODOS LOS CLAIMS
+    private Claims extractAllClaims(String token) {
+        return Jwts
+                .parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    // EXTRAER CUALQUIER CLAIM
+    public <T> T extractClaim(String token, Function<Claims, T> resolver) {
+        final Claims claims = extractAllClaims(token);
+        return resolver.apply(claims);
+    }
+
+    // VALIDAR EXPIRACIÓN
+    private Boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
+
+    // VALIDAR TOKEN COMPLETO
+    public Boolean isTokenValid(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
+    // 🔥 GENERAR TOKEN CON ROLES
+    public String generateToken(UserDetails userDetails) {
+
+        // Convertir authorities a set de Strings
+        Set<String> roles = new HashSet<>();
+        userDetails.getAuthorities().forEach(a -> roles.add(a.getAuthority()));
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("roles", roles); // Agregar roles al token
+
+        return createToken(claims, userDetails.getUsername());
+    }
+
+    // CREAR TOKEN CON CLAIMS Y USUARIO
+    private String createToken(Map<String, Object> claims, String username) {
 
         return Jwts.builder()
+                .setClaims(claims)
                 .setSubject(username)
-                .claim("roles", roles)   // roles dentro del token
-                .setIssuedAt(new Date())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // ===================== OBTENER USERNAME =====================
-    public String extractUsername(String token) {
-        return extractAllClaims(token).getSubject();
-    }
-
-    // ===================== OBTENER ROLES =====================
+    // EXTRAER ROLES DEL TOKEN
     public Set<String> extractRoles(String token) {
-        return (Set<String>) extractAllClaims(token).get("roles");
-    }
+        Claims claims = extractAllClaims(token);
 
-    // ===================== VALIDAR TOKEN =====================
-    public boolean validateToken(String token) {
-        try {
-            extractAllClaims(token);  // Si no lanza excepción → válido
-            return true;
-        } catch (Exception e) {
-            return false;
+        Object rolesObject = claims.get("roles");
+
+        if (rolesObject instanceof List<?>) {
+            List<?> list = (List<?>) rolesObject;
+            Set<String> roles = new HashSet<>();
+            list.forEach(item -> roles.add(item.toString()));
+            return roles;
         }
-    }
 
-    // ===================== EXTRAER CLAIMS =====================
-    private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        return Collections.emptySet();
     }
 }
