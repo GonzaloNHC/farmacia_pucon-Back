@@ -1,7 +1,7 @@
 package Farmacia_Pucon.demo.ventas.domain;
 
-import Farmacia_Pucon.demo.productos.domain.Producto;
-import Farmacia_Pucon.demo.productos.domain.Lote;
+//import Farmacia_Pucon.demo.productos.domain.Producto;
+//import Farmacia_Pucon.demo.productos.domain.Lote;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
@@ -17,14 +17,14 @@ public class DetalleVenta {
     @JoinColumn(name = "venta_id")
     private Venta venta;
 
-    @ManyToOne
+   /* @ManyToOne
     @JoinColumn(name = "producto_id")
     private Producto producto;
 
     @ManyToOne
     @JoinColumn(name = "lote_id")
     private Lote lote;
-
+*/
     private Integer cantidad;
 
     private BigDecimal precioUnitario;

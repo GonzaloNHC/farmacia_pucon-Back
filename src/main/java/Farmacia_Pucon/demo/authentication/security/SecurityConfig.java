@@ -2,6 +2,7 @@ package Farmacia_Pucon.demo.authentication.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -42,11 +43,15 @@ public class SecurityConfig {
                 /** 🔥 Rutas PUBLICAS (sin login) */
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/h2/**",
                                 "/api/auth/login",         // login
                                 "/v3/api-docs/**",         // swagger
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/medicamentos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,  "/api/medicamentos/**").permitAll()
 
                         /** 🔥 Rutas protegidas por rol */
                         .requestMatchers("/api/users/**").hasAuthority("ADMINISTRADOR")
@@ -55,6 +60,9 @@ public class SecurityConfig {
                         /** 🔥 Rutas que solo necesitan estar autenticadas */
                         .anyRequest().authenticated()
                 )
+
+                // 👇 permitir que H2 se muestre en frames
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
 
                 /** 🔥 Registrar el filtro JWT ANTES de UsernamePasswordAuthenticationFilter */
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

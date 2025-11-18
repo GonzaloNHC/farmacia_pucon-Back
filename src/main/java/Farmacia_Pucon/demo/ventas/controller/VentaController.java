@@ -1,4 +1,4 @@
-package Farmacia_Pucon.demo.ventas.controller;
+/*package Farmacia_Pucon.demo.ventas.controller;
 
 import java.security.Principal;
 import java.util.List;
@@ -48,3 +48,4 @@ public class VentaController {
         return ResponseEntity.ok(ventaService.listarVentas());
     }
 }
+*/
