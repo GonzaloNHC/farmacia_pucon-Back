@@ -2,24 +2,70 @@ package Farmacia_Pucon.demo.authentication.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
 
+    private final JwtFilter jwtFilter;
+
+    public SecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
+
+    /** BCrypt para contraseñas */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    /** AuthenticationManager para el login */
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    /** Configuración real de seguridad */
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(AbstractHttpConfigurer::disable)
+                .csrf(cs -> cs.disable())
+                .cors(cors -> cors.disable())
 
-                // 🔓 PERMITIR TODO PARA PROBAR EL MÓDULO INVENTARIO
+                /** 🔥 Rutas PUBLICAS (sin login) */
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
-                );
+                        .requestMatchers(
+                                "/h2/**",
+                                "/api/auth/login",         // login
+                                "/v3/api-docs/**",         // swagger
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/medicamentos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,  "/api/medicamentos/**").permitAll()
+
+                        /** 🔥 Rutas protegidas por rol */
+                        .requestMatchers("/api/users/**").hasAuthority("ADMINISTRADOR")
+                        .requestMatchers("/api/roles/**").hasAuthority("ADMINISTRADOR")
+
+                        /** 🔥 Rutas que solo necesitan estar autenticadas */
+                        .anyRequest().authenticated()
+                )
+
+                // 👇 permitir que H2 se muestre en frames
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+
+                /** 🔥 Registrar el filtro JWT ANTES de UsernamePasswordAuthenticationFilter */
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
