@@ -1,12 +1,12 @@
 package Farmacia_Pucon.demo.inventario.stock.service.impl;
 
 import Farmacia_Pucon.demo.inventario.domain.Medicamento;
+import Farmacia_Pucon.demo.inventario.repository.LoteRepository;
 import Farmacia_Pucon.demo.inventario.repository.MedicamentoRepository;
-import Farmacia_Pucon.demo.inventario.stock.domain.Lote;
+import Farmacia_Pucon.demo.inventario.domain.Lote;
 import Farmacia_Pucon.demo.inventario.stock.dto.ActualizarStockRequest;
 import Farmacia_Pucon.demo.inventario.stock.dto.CrearLoteRequest;
 import Farmacia_Pucon.demo.inventario.stock.dto.LoteResponseDTO;
-import Farmacia_Pucon.demo.inventario.stock.repository.LoteRepository;
 import Farmacia_Pucon.demo.inventario.stock.service.LoteService;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +44,7 @@ public class LoteServiceImpl implements LoteService {
         lote.setFechaVencimiento(request.getFechaVencimiento());
         lote.setStockInicial(request.getStockInicial());
         lote.setStockMinimo(request.getStockMinimo());
+        lote.setCantidadDisponible(request.getStockInicial());
         lote.setActivo(true);
 
         Lote guardado = loteRepository.save(lote);
@@ -83,6 +84,7 @@ public class LoteServiceImpl implements LoteService {
                 throw new RuntimeException("El stockInicial no puede ser negativo");
             }
             lote.setStockInicial(request.getStockInicial());
+            lote.setCantidadDisponible(request.getStockInicial());
         }
         if (request.getStockMinimo() != null) {
             lote.setStockMinimo(request.getStockMinimo());

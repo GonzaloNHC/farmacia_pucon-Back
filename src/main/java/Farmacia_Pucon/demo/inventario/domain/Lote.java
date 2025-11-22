@@ -1,6 +1,5 @@
-package Farmacia_Pucon.demo.inventario.stock.domain;
+package Farmacia_Pucon.demo.inventario.domain;
 
-import Farmacia_Pucon.demo.inventario.domain.Medicamento;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -16,26 +15,36 @@ public class Lote {
     @Column(name = "codigo_lote", nullable = false)
     private String codigoLote;
 
-    @Column(name = "fecha_vencimiento")
+    @Column(name = "fecha_vencimiento", nullable = false)
     private LocalDate fechaVencimiento;
 
+    //El actual
+    @Column(name = "cantidad_disponible", nullable = false)
+    private Integer cantidadDisponible;
+
+    //El que llegó a la farmacia
     @Column(name = "stock_inicial", nullable = false)
     private Integer stockInicial;
 
-    @Column(name = "stock_minimo")
+    @Column(name = "stock_minimo", nullable = false)
     private Integer stockMinimo;
 
-    @Column(name = "activo")
+    @Column(name = "activo", nullable = false)
     private Boolean activo = true;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "medicamento_id", nullable = false)
     private Medicamento medicamento;
 
-    // ===== Getters y setters =====
+    public Lote() {
+    }
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getCodigoLote() {
@@ -52,6 +61,14 @@ public class Lote {
 
     public void setFechaVencimiento(LocalDate fechaVencimiento) {
         this.fechaVencimiento = fechaVencimiento;
+    }
+
+    public Integer getCantidadDisponible() {
+        return cantidadDisponible;
+    }
+
+    public void setCantidadDisponible(Integer cantidadDisponible) {
+        this.cantidadDisponible = cantidadDisponible;
     }
 
     public Integer getStockInicial() {

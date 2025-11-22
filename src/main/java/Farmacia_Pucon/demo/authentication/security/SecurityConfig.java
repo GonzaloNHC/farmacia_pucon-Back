@@ -39,19 +39,23 @@ public class SecurityConfig {
         http
                 .csrf(cs -> cs.disable())
                 .cors(cors -> cors.disable())
+                //.cors(cors -> {})
 
                 /** 🔥 Rutas PUBLICAS (sin login) */
                 .authorizeHttpRequests(auth -> auth
+                        /*.anyRequest().permitAll()*/
                         .requestMatchers(
                                 "/h2/**",
-                                "/api/auth/login",         // login
-                                "/v3/api-docs/**",         // swagger
+                                "/api/lotes/**",
+                                "/api/medicamentos/**",
+                                "/api/ventas/**",
+                                "/api/ingresos/**",
+                                "/api/auth/login",      //login
+                                "/v3/api-docs/**",      //swagger
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/medicamentos/**").permitAll()
-                        .requestMatchers(HttpMethod.GET,  "/api/medicamentos/**").permitAll()
 
                         /** 🔥 Rutas protegidas por rol */
                         .requestMatchers("/api/users/**").hasAuthority("ADMINISTRADOR")

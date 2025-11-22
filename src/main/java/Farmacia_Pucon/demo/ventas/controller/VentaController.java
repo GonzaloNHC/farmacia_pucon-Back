@@ -1,20 +1,13 @@
-/*package Farmacia_Pucon.demo.ventas.controller;
-
-import java.security.Principal;
-import java.util.List;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+package Farmacia_Pucon.demo.ventas.controller;
 
 import Farmacia_Pucon.demo.ventas.dto.RegistrarVentaRequest;
 import Farmacia_Pucon.demo.ventas.dto.VentaResponseDTO;
 import Farmacia_Pucon.demo.ventas.service.VentaService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/ventas")
@@ -28,14 +21,13 @@ public class VentaController {
     }
 
     @PostMapping
-    public ResponseEntity<VentaResponseDTO> registrarVenta(
+    public ResponseEntity<VentaResponseDTO> registrar(
             @RequestBody RegistrarVentaRequest request,
-            Principal principal) {
-
-        String username = principal.getName();
-        VentaResponseDTO venta = ventaService.registrarVenta(request, username);
-
-        return ResponseEntity.ok(venta);
+            Principal principal
+    ) {
+        String username = principal != null ? principal.getName() : null;
+        VentaResponseDTO respuesta = ventaService.registrarVenta(request, username);
+        return ResponseEntity.ok(respuesta);
     }
 
     @GetMapping("/{id}")
@@ -48,4 +40,3 @@ public class VentaController {
         return ResponseEntity.ok(ventaService.listarVentas());
     }
 }
-*/

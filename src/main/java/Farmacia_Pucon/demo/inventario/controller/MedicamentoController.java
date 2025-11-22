@@ -31,7 +31,7 @@ public class MedicamentoController {
 
     @GetMapping("/{id}")
     public ResponseEntity<MedicamentoResponseDTO> obtener(@PathVariable Long id) {
-        return ResponseEntity.ok(medicamentoService.obtener(id));
+        return ResponseEntity.ok(medicamentoService.obtenerPorId(id));
     }
 
     @PutMapping("/{id}")

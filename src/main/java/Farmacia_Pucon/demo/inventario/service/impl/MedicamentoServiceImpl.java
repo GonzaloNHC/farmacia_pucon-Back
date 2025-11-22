@@ -7,7 +7,6 @@ import Farmacia_Pucon.demo.inventario.repository.MedicamentoRepository;
 import Farmacia_Pucon.demo.inventario.service.MedicamentoService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,12 +22,8 @@ public class MedicamentoServiceImpl implements MedicamentoService {
     @Override
     public MedicamentoResponseDTO crear(MedicamentoRequestDTO request) {
 
-        if (request.getNombreComercial() == null || request.getNombreGenerico() == null) {
-            throw new RuntimeException("El nombre comercial y el nombre genérico son obligatorios");
-        }
-
         if (medicamentoRepository.existsByNombreComercialIgnoreCase(request.getNombreComercial())) {
-            throw new RuntimeException("Ya existe un medicamento con ese nombre comercial");
+            throw new IllegalArgumentException("Ya existe un medicamento con ese nombre comercial");
         }
 
         Medicamento entity = new Medicamento();
@@ -36,11 +31,34 @@ public class MedicamentoServiceImpl implements MedicamentoService {
         entity.setNombreGenerico(request.getNombreGenerico());
         entity.setPresentacion(request.getPresentacion());
         entity.setDosificacion(request.getDosificacion());
-        entity.setActivo(request.getActivo() != null ? request.getActivo() : true);
+        entity.setActivo(request.getActivo() == null ? true : request.getActivo());
 
         Medicamento guardado = medicamentoRepository.save(entity);
-
         return toResponse(guardado);
+    }
+
+    @Override
+    public MedicamentoResponseDTO actualizar(Long id, MedicamentoRequestDTO request) {
+        Medicamento entity = medicamentoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Medicamento no encontrado"));
+
+        entity.setNombreComercial(request.getNombreComercial());
+        entity.setNombreGenerico(request.getNombreGenerico());
+        entity.setPresentacion(request.getPresentacion());
+        entity.setDosificacion(request.getDosificacion());
+        if (request.getActivo() != null) {
+            entity.setActivo(request.getActivo());
+        }
+
+        Medicamento actualizado = medicamentoRepository.save(entity);
+        return toResponse(actualizado);
+    }
+
+    @Override
+    public MedicamentoResponseDTO obtenerPorId(Long id) {
+        Medicamento entity = medicamentoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Medicamento no encontrado"));
+        return toResponse(entity);
     }
 
     @Override
@@ -52,64 +70,27 @@ public class MedicamentoServiceImpl implements MedicamentoService {
     }
 
     @Override
-    public MedicamentoResponseDTO obtener(Long id) {
-        Medicamento entity = medicamentoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Medicamento no encontrado"));
-
-        return toResponse(entity);
-    }
-
-    @Override
-    public MedicamentoResponseDTO actualizar(Long id, MedicamentoRequestDTO request) {
-
-        Medicamento entity = medicamentoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Medicamento no encontrado"));
-
-        if (request.getNombreComercial() != null) {
-            entity.setNombreComercial(request.getNombreComercial());
-        }
-        if (request.getNombreGenerico() != null) {
-            entity.setNombreGenerico(request.getNombreGenerico());
-        }
-        if (request.getPresentacion() != null) {
-            entity.setPresentacion(request.getPresentacion());
-        }
-        if (request.getDosificacion() != null) {
-            entity.setDosificacion(request.getDosificacion());
-        }
-        if (request.getActivo() != null) {
-            entity.setActivo(request.getActivo());
-        }
-
-        Medicamento actualizado = medicamentoRepository.save(entity);
-
-        return toResponse(actualizado);
-    }
-
-    @Override
     public void eliminar(Long id) {
-        // Soft delete: marcar como inactivo
-        Medicamento entity = medicamentoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Medicamento no encontrado"));
-
-        entity.setActivo(false);
-        medicamentoRepository.save(entity);
+        if (!medicamentoRepository.existsById(id)) {
+            throw new IllegalArgumentException("Medicamento no encontrado");
+        }
+        medicamentoRepository.deleteById(id);
     }
 
     @Override
     public List<MedicamentoResponseDTO> buscarPorTexto(String texto) {
+        List<Medicamento> porNombreComercial = medicamentoRepository
+                .findByNombreComercialContainingIgnoreCase(texto);
+        List<Medicamento> porNombreGenerico = medicamentoRepository
+                .findByNombreGenericoContainingIgnoreCase(texto);
 
-        if (texto == null || texto.trim().isEmpty()) {
-            return listar();
-        }
-
-        List<Medicamento> resultado = new ArrayList<>();
-        resultado.addAll(medicamentoRepository.findByNombreComercialContainingIgnoreCase(texto));
-        resultado.addAll(medicamentoRepository.findByNombreGenericoContainingIgnoreCase(texto));
-
-        // Evitar duplicados si aparece en ambos
-        return resultado.stream()
+        // unimos sin duplicar
+        return porNombreComercial.stream()
                 .distinct()
+                .collect(Collectors.toList())
+                .stream()
+                .collect(Collectors.toList())
+                .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }

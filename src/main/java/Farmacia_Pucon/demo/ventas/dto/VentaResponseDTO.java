@@ -8,22 +8,77 @@ public class VentaResponseDTO {
 
     private Long id;
     private LocalDateTime fechaHora;
-    private String nombreUsuario;
-    private String nombrePaciente;
+    private String nombreUsuario;   // si luego quieres usar cajero
+    private String nombrePaciente;  // si luego conectas con pacientes
     private BigDecimal total;
     private String estado;
 
     private List<DetalleVentaDTO> detalles;
+    private List<PagoDTO> pagos;
 
-    public static class DetalleVentaDTO {
-        private String nombreProducto;
-        private String codigoLote;
-        private Integer cantidad;
-        private BigDecimal precioUnitario;
-        private BigDecimal subtotal;
+    // ===== GETTERS y SETTERS =====
 
-        // getters y setters
+    public Long getId() {
+        return id;
     }
 
-    // getters y setters
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public LocalDateTime getFechaHora() {
+        return fechaHora;
+    }
+
+    public void setFechaHora(LocalDateTime fechaHora) {
+        this.fechaHora = fechaHora;
+    }
+
+    public String getNombreUsuario() {
+        return nombreUsuario;
+    }
+
+    public void setNombreUsuario(String nombreUsuario) {
+        this.nombreUsuario = nombreUsuario;
+    }
+
+    public String getNombrePaciente() {
+        return nombrePaciente;
+    }
+
+    public void setNombrePaciente(String nombrePaciente) {
+        this.nombrePaciente = nombrePaciente;
+    }
+
+    public BigDecimal getTotal() {
+        return total;
+    }
+
+    public void setTotal(BigDecimal total) {
+        this.total = total;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    public List<DetalleVentaDTO> getDetalles() {
+        return detalles;
+    }
+
+    public void setDetalles(List<DetalleVentaDTO> detalles) {
+        this.detalles = detalles;
+    }
+
+    public List<PagoDTO> getPagos() {
+        return pagos;
+    }
+
+    public void setPagos(List<PagoDTO> pagos) {
+        this.pagos = pagos;
+    }
 }

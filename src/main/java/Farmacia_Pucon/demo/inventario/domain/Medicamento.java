@@ -16,17 +16,24 @@ public class Medicamento {
     @Column(name = "nombre_generico", nullable = false)
     private String nombreGenerico;
 
-    @Column(name = "presentacion")
-    private String presentacion;   // ej: comprimidos, jarabe, cápsulas
+    @Column(name = "presentacion", nullable = false)
+    private String presentacion;
 
-    @Column(name = "dosificacion")
-    private String dosificacion;   // ej: 500 mg, 10 mg/ml
+    @Column(name = "dosificacion", nullable = false)
+    private String dosificacion;
 
-    @Column(name = "activo")
+    @Column(name = "activo", nullable = false)
     private Boolean activo = true;
+
+    public Medicamento() {
+    }
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getNombreComercial() {
