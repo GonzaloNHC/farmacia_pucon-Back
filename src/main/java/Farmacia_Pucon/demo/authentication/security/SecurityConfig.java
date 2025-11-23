@@ -41,7 +41,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.disable())
                 //.cors(cors -> {})
 
-                /** 🔥 Rutas PUBLICAS (sin login) */
+                /** Rutas PUBLICAS (sin login) */
                 .authorizeHttpRequests(auth -> auth
                         /*.anyRequest().permitAll()*/
                         .requestMatchers(
@@ -57,18 +57,18 @@ public class SecurityConfig {
                         ).permitAll()
 
 
-                        /** 🔥 Rutas protegidas por rol */
+                        /**  Rutas protegidas por rol */
                         .requestMatchers("/api/users/**").hasAuthority("ADMINISTRADOR")
                         .requestMatchers("/api/roles/**").hasAuthority("ADMINISTRADOR")
 
-                        /** 🔥 Rutas que solo necesitan estar autenticadas */
+                        /**  Rutas que solo necesitan estar autenticadas */
                         .anyRequest().authenticated()
                 )
 
-                // 👇 permitir que H2 se muestre en frames
+                //  permitir que H2 se muestre en frames
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
 
-                /** 🔥 Registrar el filtro JWT ANTES de UsernamePasswordAuthenticationFilter */
+                /**  Registrar el filtro JWT ANTES de UsernamePasswordAuthenticationFilter */
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -56,7 +56,7 @@ public class JwtUtil {
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
-    // 🔥 GENERAR TOKEN CON ROLES
+    //  GENERAR TOKEN CON ROLES
     public String generateToken(UserDetails userDetails) {
 
         // Convertir authorities a set de Strings
