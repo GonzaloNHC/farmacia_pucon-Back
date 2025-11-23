@@ -1,7 +1,7 @@
 package Farmacia_Pucon.demo.ventas.domain;
 
-//import Farmacia_Pucon.demo.usuarios.domain.Usuario;
-//import Farmacia_Pucon.demo.pacientes.domain.Paciente;
+import Farmacia_Pucon.demo.authentication.usuarios.domain.User;
+import Farmacia_Pucon.demo.authentication.paciente.domain.Paciente;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -19,14 +19,14 @@ public class Venta {
     @Column(name = "fecha_hora")
     private LocalDateTime fechaHora;
 
-    /*@ManyToOne
+    @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
+    private User usuario;
 
     @ManyToOne
     @JoinColumn(name = "paciente_id", nullable = false)
     private Paciente paciente;
-    */
+    
 
     private BigDecimal total;
 
@@ -96,5 +96,21 @@ public class Venta {
     public void agregarPago(Pago pago) {
         pago.setVenta(this);
         this.pagos.add(pago);
+    }
+
+    public User getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(User usuario) {
+        this.usuario = usuario;
+    }
+
+    public Paciente getPaciente() {
+        return paciente;
+    }
+
+    public void setPaciente(Paciente paciente) {
+        this.paciente = paciente;
     }
 }

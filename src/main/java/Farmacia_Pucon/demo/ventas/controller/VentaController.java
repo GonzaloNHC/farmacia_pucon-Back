@@ -1,6 +1,7 @@
 package Farmacia_Pucon.demo.ventas.controller;
 
 import Farmacia_Pucon.demo.ventas.dto.RegistrarVentaRequest;
+import Farmacia_Pucon.demo.ventas.dto.ComprobantePacienteDTO;
 import Farmacia_Pucon.demo.ventas.dto.VentaResponseDTO;
 import Farmacia_Pucon.demo.ventas.service.VentaService;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,12 @@ public class VentaController {
     @GetMapping("/{id}")
     public ResponseEntity<VentaResponseDTO> obtener(@PathVariable Long id) {
         return ResponseEntity.ok(ventaService.obtenerVenta(id));
+    }
+
+    @GetMapping("/{id}/comprobante-paciente")
+    public ResponseEntity<ComprobantePacienteDTO> obtenerComprobantePaciente(@PathVariable Long id) {
+        ComprobantePacienteDTO comprobante = ventaService.generarComprobantePaciente(id);
+        return ResponseEntity.ok(comprobante);
     }
 
     @GetMapping
