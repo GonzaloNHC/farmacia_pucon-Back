@@ -120,8 +120,7 @@ public class VentaServiceImpl implements VentaService {
             }
 
             // ===== DESCONTAR STOCK =====
-            int nuevoStock = lote.getCantidadDisponible() - itemReq.getCantidad();
-            lote.setCantidadDisponible(nuevoStock);
+            lote.setCantidadDisponible(lote.getCantidadDisponible() - itemReq.getCantidad());
             loteRepository.save(lote);
 
             // ===== CREAR DETALLE =====

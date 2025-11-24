@@ -23,14 +23,13 @@ public class Venta {
     @JoinColumn(name = "usuario_id", nullable = false)
     private User usuario;
 
-    @ManyToOne
+    @ManyToOne (optional = false)
     @JoinColumn(name = "paciente_id", nullable = false)
     private Paciente paciente;
-    
 
     private BigDecimal total;
 
-    private String estado; // REALIZADA, ANULADA
+    private String estado;
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL)
     private List<DetalleVenta> detalles = new ArrayList<>();
