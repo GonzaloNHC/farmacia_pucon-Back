@@ -12,10 +12,6 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Servicio que Spring Security utiliza para cargar los detalles del usuario
- * durante el login o la validación del JWT.
- */
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
@@ -25,11 +21,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
-    /**
-     * Carga el usuario desde la base de datos, y mapea:
-     *  - Roles       -> Authorities
-     *  - Permisos    -> Authorities
-     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
@@ -38,26 +29,29 @@ public class CustomUserDetailsService implements UserDetailsService {
                         new UsernameNotFoundException("Usuario no encontrado con username: " + username)
                 );
 
-        // Autoridades finales: roles + permisos
         Set<GrantedAuthority> authorities = new HashSet<>();
 
-        // Agregar roles como authority
+        // Roles en mayúsculas
         user.getRoles().forEach(role ->
-                authorities.add(new SimpleGrantedAuthority(role.getNombre()))
+                authorities.add(new SimpleGrantedAuthority(role.getNombre().toUpperCase()))
         );
 
-        // Agregar permisos desde cada rol
+        // Permisos en mayúsculas
         user.getRoles().forEach(role ->
                 role.getPermissions().forEach(permission ->
-                        authorities.add(new SimpleGrantedAuthority(permission.getCodigo()))
+                        authorities.add(new SimpleGrantedAuthority(permission.getCodigo().toUpperCase()))
                 )
         );
 
-        // Crear UserDetails que Spring Security necesita
-        return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
-                authorities
-        );
+        // Crear UserDetails asegurando account activo
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(user.getUsername())
+                .password(user.getPassword())
+                .authorities(authorities)
+                .accountExpired(false)
+                .accountLocked(false)
+                .credentialsExpired(false)
+                .disabled(!user.getActivo())  // activo=false => disabled=true
+                .build();
     }
 }
