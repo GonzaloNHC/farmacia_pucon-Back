@@ -1,14 +1,24 @@
 package Farmacia_Pucon.demo.ventas.dto;
 
 import lombok.Data;
+
 import java.util.List;
 
 @Data
 public class RegistrarVentaRequest {
 
-    private Long pacienteId;
-    private List<ItemVentaRequest> items;
-    private List<PagoRequest> pagos;
+    private Long usuarioId;                  // 👈 nuevo: quién vende
+    private Long pacienteId;                 // quién compra
+    private List<ItemVentaRequest> items;    // detalle de venta
+    private List<PagoRequest> pagos;         // pagos
+
+    public Long getUsuarioId() {
+        return usuarioId;
+    }
+
+    public void setUsuarioId(Long usuarioId) {
+        this.usuarioId = usuarioId;
+    }
 
     public Long getPacienteId() {
         return pacienteId;

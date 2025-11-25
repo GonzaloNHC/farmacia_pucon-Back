@@ -38,6 +38,8 @@ public class IngresoServiceImpl implements IngresoService {
         this.loteRepository = loteRepository;
     }
 
+    // ================== CREAR ==================
+
     @Override
     @Transactional
     public IngresoResponseDTO registrarIngreso(CrearIngresoRequest request) {
@@ -104,7 +106,10 @@ public class IngresoServiceImpl implements IngresoService {
         return mapToResponse(ingresoGuardado);
     }
 
+    // ================== LEER ==================
+
     @Override
+    @Transactional(readOnly = true)
     public IngresoResponseDTO obtenerIngreso(Long id) {
         Ingreso ingreso = ingresoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ingreso no encontrado"));
@@ -112,11 +117,49 @@ public class IngresoServiceImpl implements IngresoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<IngresoResponseDTO> listarIngresos() {
         return ingresoRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+
+    // ================== ACTUALIZAR ==================
+    // Para no romper stock ni lotes, solo permitimos cambiar la observación.
+
+    @Override
+    @Transactional
+    public IngresoResponseDTO actualizarIngreso(Long id, CrearIngresoRequest request) {
+
+        Ingreso ingreso = ingresoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ingreso no encontrado"));
+
+        // Por ahora solo actualizamos la observación
+        ingreso.setObservacion(request.getObservacion());
+
+        Ingreso actualizado = ingresoRepository.save(ingreso);
+
+        return mapToResponse(actualizado);
+    }
+
+    // ================== ELIMINAR ==================
+    // Eliminamos ingreso y sus detalles. No tocamos lotes para no romper ventas.
+
+    @Override
+    @Transactional
+    public void eliminarIngreso(Long id) {
+
+        Ingreso ingreso = ingresoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ingreso no encontrado"));
+
+        // Borrar primero detalles (por FK)
+        if (ingreso.getDetalles() != null && !ingreso.getDetalles().isEmpty()) {
+            detalleIngresoRepository.deleteAll(ingreso.getDetalles());
+        }
+
+        // Luego el ingreso
+        ingresoRepository.delete(ingreso);
     }
 
     // ================== MAPEOS A DTO ==================

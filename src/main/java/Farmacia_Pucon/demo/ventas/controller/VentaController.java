@@ -7,7 +7,6 @@ import Farmacia_Pucon.demo.ventas.service.VentaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -23,11 +22,9 @@ public class VentaController {
 
     @PostMapping
     public ResponseEntity<VentaResponseDTO> registrar(
-            @RequestBody RegistrarVentaRequest request,
-            Principal principal
+            @RequestBody RegistrarVentaRequest request
     ) {
-        String username = principal != null ? principal.getName() : null;
-        VentaResponseDTO respuesta = ventaService.registrarVenta(request, username);
+        VentaResponseDTO respuesta = ventaService.registrarVenta(request);
         return ResponseEntity.ok(respuesta);
     }
 

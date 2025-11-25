@@ -8,8 +8,8 @@ public class VentaResponseDTO {
 
     private Long id;
     private LocalDateTime fechaHora;
-    private String nombreUsuario;   // si luego quieres usar cajero
-    private String nombrePaciente;  // si luego conectas con pacientes
+    private String nombreUsuario;   // cajero
+    private String nombrePaciente;  // paciente
     private BigDecimal total;
     private String estado;
 

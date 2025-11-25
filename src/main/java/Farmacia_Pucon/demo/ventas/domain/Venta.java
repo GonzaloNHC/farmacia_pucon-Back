@@ -3,6 +3,7 @@ package Farmacia_Pucon.demo.ventas.domain;
 import Farmacia_Pucon.demo.authentication.usuarios.domain.User;
 import Farmacia_Pucon.demo.authentication.paciente.domain.Paciente;
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ public class Venta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "fecha_hora")
+    @Column(name = "fecha_hora", nullable = false)
     private LocalDateTime fechaHora;
 
     @ManyToOne
@@ -26,17 +27,20 @@ public class Venta {
     @ManyToOne
     @JoinColumn(name = "paciente_id", nullable = false)
     private Paciente paciente;
-    
 
+    @Column(nullable = false)
     private BigDecimal total;
 
-    private String estado; // REALIZADA, ANULADA
+    @Column(nullable = false)
+    private String estado; // EJ: COMPLETADA, ANULADA
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL)
     private List<DetalleVenta> detalles = new ArrayList<>();
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL)
     private List<Pago> pagos = new ArrayList<>();
+
+    // ===== Getters y setters =====
 
     public Long getId() {
         return id;
@@ -52,6 +56,22 @@ public class Venta {
 
     public void setFechaHora(LocalDateTime fechaHora) {
         this.fechaHora = fechaHora;
+    }
+
+    public User getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(User usuario) {
+        this.usuario = usuario;
+    }
+
+    public Paciente getPaciente() {
+        return paciente;
+    }
+
+    public void setPaciente(Paciente paciente) {
+        this.paciente = paciente;
     }
 
     public BigDecimal getTotal() {
@@ -86,7 +106,7 @@ public class Venta {
         this.pagos = pagos;
     }
 
-    // Métodos de conveniencia
+    // ===== Métodos de conveniencia =====
 
     public void agregarDetalle(DetalleVenta detalle) {
         detalle.setVenta(this);
@@ -96,21 +116,5 @@ public class Venta {
     public void agregarPago(Pago pago) {
         pago.setVenta(this);
         this.pagos.add(pago);
-    }
-
-    public User getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(User usuario) {
-        this.usuario = usuario;
-    }
-
-    public Paciente getPaciente() {
-        return paciente;
-    }
-
-    public void setPaciente(Paciente paciente) {
-        this.paciente = paciente;
     }
 }

@@ -8,11 +8,11 @@ import java.util.List;
 
 public interface VentaService {
 
-    VentaResponseDTO registrarVenta(RegistrarVentaRequest request, String usernameCajero);
+    VentaResponseDTO registrarVenta(RegistrarVentaRequest request);
 
     VentaResponseDTO obtenerVenta(Long id);
 
     List<VentaResponseDTO> listarVentas();
-    
+
     ComprobantePacienteDTO generarComprobantePaciente(Long ventaId);
 }
