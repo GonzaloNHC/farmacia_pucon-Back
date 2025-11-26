@@ -19,4 +19,8 @@ public interface PacienteService {
     PacienteResponseDTO actualizarPaciente(Long id, PacienteRequestDTO request);
 
     void eliminarPaciente(Long id);
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> feature/devpeque

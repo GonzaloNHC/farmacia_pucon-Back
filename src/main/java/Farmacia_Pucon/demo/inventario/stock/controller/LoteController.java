@@ -1,8 +1,7 @@
 package Farmacia_Pucon.demo.inventario.stock.controller;
 
-import Farmacia_Pucon.demo.inventario.stock.dto.ActualizarStockRequest;
-import Farmacia_Pucon.demo.inventario.stock.dto.CrearLoteRequest;
-import Farmacia_Pucon.demo.inventario.stock.dto.LoteResponseDTO;
+import Farmacia_Pucon.demo.inventario.stock.dto.*;
+import Farmacia_Pucon.demo.inventario.dto.DevolucionStockRequest;
 import Farmacia_Pucon.demo.inventario.stock.service.LoteService;
 
 import org.springframework.http.ResponseEntity;
@@ -26,6 +25,13 @@ public class LoteController {
         return ResponseEntity.ok(loteService.crearLote(request));
     }
 
+    @PostMapping("/movimientos")
+    public ResponseEntity<LoteResponseDTO> registrarMovimiento(
+            @RequestBody RegistrarMovimientoRequest request
+    ) {
+        return ResponseEntity.ok(loteService.registrarMovimiento(request));
+    }
+
     @GetMapping
     public ResponseEntity<List<LoteResponseDTO>> listarTodos() {
         return ResponseEntity.ok(loteService.listarTodos());
@@ -47,6 +53,14 @@ public class LoteController {
             @RequestBody ActualizarStockRequest request
     ) {
         return ResponseEntity.ok(loteService.actualizarStock(id, request));
+    }
+
+    @PutMapping("/{id}/devolucion")
+    public ResponseEntity<LoteResponseDTO> devolverStock(
+            @PathVariable Long id,
+            @RequestBody DevolucionStockRequest request
+    ) {
+        return ResponseEntity.ok(loteService.devolverStock(id, request));
     }
 
     @DeleteMapping("/{id}")

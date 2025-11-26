@@ -16,6 +16,7 @@ import Farmacia_Pucon.demo.inventario.repository.MedicamentoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -82,8 +83,17 @@ public class IngresoServiceImpl implements IngresoService {
             lote.setFechaVencimiento(detReq.getFechaVencimiento());
             lote.setStockInicial(detReq.getCantidad());
             lote.setCantidadDisponible(detReq.getCantidad());
-            lote.setStockMinimo(0); // puedes cambiar esto si manejas stock mínimo
+            lote.setPrecioUnitario(detReq.getPrecioCompra());
+            lote.setStockMinimo(0); //
             lote.setActivo(true);
+
+            BigDecimal precioUnitario = detReq.getPrecioCompra();  // ya es BigDecimal
+            lote.setPrecioUnitario(precioUnitario);
+
+            BigDecimal precioTotal = precioUnitario.multiply(
+                    BigDecimal.valueOf(detReq.getCantidad())
+            );
+            lote.setPrecioTotalLote(precioTotal);
 
             lote = loteRepository.save(lote);
 

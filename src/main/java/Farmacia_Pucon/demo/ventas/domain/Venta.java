@@ -117,4 +117,8 @@ public class Venta {
         pago.setVenta(this);
         this.pagos.add(pago);
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> feature/devpeque

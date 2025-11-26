@@ -1,5 +1,6 @@
 package Farmacia_Pucon.demo.inventario.ingreso.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class DetalleIngresoRequest {
@@ -7,7 +8,7 @@ public class DetalleIngresoRequest {
     private Long medicamentoId;
     private Integer cantidad;
     private LocalDate fechaVencimiento;
-    private Double precioCompra;
+    private BigDecimal precioCompra;
     private String codigoLote;
 
     public Long getMedicamentoId() {
@@ -34,11 +35,11 @@ public class DetalleIngresoRequest {
         this.fechaVencimiento = fechaVencimiento;
     }
 
-    public Double getPrecioCompra() {
+    public BigDecimal getPrecioCompra() {
         return precioCompra;
     }
 
-    public void setPrecioCompra(Double precioCompra) {
+    public void setPrecioCompra(BigDecimal precioCompra) {
         this.precioCompra = precioCompra;
     }
 
