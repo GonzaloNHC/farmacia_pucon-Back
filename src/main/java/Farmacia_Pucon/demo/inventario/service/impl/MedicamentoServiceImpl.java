@@ -6,7 +6,8 @@ import Farmacia_Pucon.demo.inventario.dto.MedicamentoResponseDTO;
 import Farmacia_Pucon.demo.inventario.repository.MedicamentoRepository;
 import Farmacia_Pucon.demo.inventario.service.MedicamentoService;
 import org.springframework.stereotype.Service;
-
+import Farmacia_Pucon.demo.common.domain.CodigoBarras;
+import Farmacia_Pucon.demo.common.service.CodigoBarrasService;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,24 +15,36 @@ import java.util.stream.Collectors;
 public class MedicamentoServiceImpl implements MedicamentoService {
 
     private final MedicamentoRepository medicamentoRepository;
+    private final CodigoBarrasService codigoBarrasService;
 
-    public MedicamentoServiceImpl(MedicamentoRepository medicamentoRepository) {
+    public MedicamentoServiceImpl(MedicamentoRepository medicamentoRepository,
+            CodigoBarrasService codigoBarrasService) {
         this.medicamentoRepository = medicamentoRepository;
+        this.codigoBarrasService = codigoBarrasService;
     }
 
     @Override
     public MedicamentoResponseDTO crear(MedicamentoRequestDTO request) {
-
-        if (medicamentoRepository.existsByNombreComercialIgnoreCase(request.getNombreComercial())) {
+         if (medicamentoRepository.existsByNombreComercialIgnoreCase(request.getNombreComercial())) {
             throw new IllegalArgumentException("Ya existe un medicamento con ese nombre comercial");
         }
-
         Medicamento entity = new Medicamento();
         entity.setNombreComercial(request.getNombreComercial());
         entity.setNombreGenerico(request.getNombreGenerico());
         entity.setPresentacion(request.getPresentacion());
         entity.setDosificacion(request.getDosificacion());
-        entity.setActivo(request.getActivo() == null ? true : request.getActivo());
+
+        // Activo por defecto si viene null
+        if (request.getActivo() != null) {
+            entity.setActivo(request.getActivo());
+        } else {
+            entity.setActivo(true);
+        }
+
+        // ⚠️ IMPORTANTE: aquí NO usamos request.getCodigoBarras()
+        // Generamos el código de barras encriptado a partir de los datos del medicamento
+        CodigoBarras codigo = codigoBarrasService.generarParaMedicamento(entity);
+        entity.setCodigoBarras(codigo);
 
         Medicamento guardado = medicamentoRepository.save(entity);
         return toResponse(guardado);
@@ -46,8 +59,16 @@ public class MedicamentoServiceImpl implements MedicamentoService {
         entity.setNombreGenerico(request.getNombreGenerico());
         entity.setPresentacion(request.getPresentacion());
         entity.setDosificacion(request.getDosificacion());
+
+        CodigoBarras codigo = codigoBarrasService.generarParaMedicamento(entity);
+        entity.setCodigoBarras(codigo);
+
         if (request.getActivo() != null) {
             entity.setActivo(request.getActivo());
+        }
+
+        if (request.getCodigoBarras() != null && !request.getCodigoBarras().isBlank()) {
+            entity.setCodigoBarras(new CodigoBarras(request.getCodigoBarras()));
         }
 
         Medicamento actualizado = medicamentoRepository.save(entity);
@@ -95,14 +116,33 @@ public class MedicamentoServiceImpl implements MedicamentoService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public MedicamentoResponseDTO buscarPorCodigoBarras(String codigoBarras) {
+        Medicamento entity = medicamentoRepository
+                .findByCodigoBarras_Valor(codigoBarras)
+                .orElseThrow(() -> new RuntimeException("No se encontró medicamento con ese código de barras"));
+        return toResponse(entity);
+    }
+
+    @Override
+    public String decodificarCodigoBarras(String codigoBarras) {
+        // Esto te devuelve el texto original (nombreComercial|nombreGenerico|presentacion|dosificacion)
+        return codigoBarrasService.desencriptar(codigoBarras);
+    }
+
     private MedicamentoResponseDTO toResponse(Medicamento entity) {
+        String codigo = entity.getCodigoBarras() != null
+                ? entity.getCodigoBarras().getValor()
+                : null;
+
         return new MedicamentoResponseDTO(
                 entity.getId(),
                 entity.getNombreComercial(),
                 entity.getNombreGenerico(),
                 entity.getPresentacion(),
                 entity.getDosificacion(),
-                entity.getActivo()
+                entity.getActivo(),
+                codigo
         );
     }
 }

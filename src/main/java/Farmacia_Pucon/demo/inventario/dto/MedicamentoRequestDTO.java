@@ -7,6 +7,7 @@ public class MedicamentoRequestDTO {
     private String presentacion;
     private String dosificacion;
     private Boolean activo; // si viene null se asume true en el service
+    private String codigoBarras;
 
     public MedicamentoRequestDTO() {
     }
@@ -49,5 +50,13 @@ public class MedicamentoRequestDTO {
 
     public void setActivo(Boolean activo) {
         this.activo = activo;
+    }
+
+    public String getCodigoBarras() {
+        return codigoBarras;
+    }
+
+    public void setCodigoBarras(String codigoBarras) {
+        this.codigoBarras = codigoBarras;
     }
 }
