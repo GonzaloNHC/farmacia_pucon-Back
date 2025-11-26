@@ -25,6 +25,9 @@ public class MedicamentoServiceImpl implements MedicamentoService {
 
     @Override
     public MedicamentoResponseDTO crear(MedicamentoRequestDTO request) {
+         if (medicamentoRepository.existsByNombreComercialIgnoreCase(request.getNombreComercial())) {
+            throw new IllegalArgumentException("Ya existe un medicamento con ese nombre comercial");
+        }
         Medicamento entity = new Medicamento();
         entity.setNombreComercial(request.getNombreComercial());
         entity.setNombreGenerico(request.getNombreGenerico());
