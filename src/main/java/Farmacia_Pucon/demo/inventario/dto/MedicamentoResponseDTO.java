@@ -8,6 +8,8 @@ public class MedicamentoResponseDTO {
     private String presentacion;
     private String dosificacion;
     private Boolean activo;
+    private String codigoBarras;
+
 
     public MedicamentoResponseDTO(
             Long id,
@@ -15,7 +17,8 @@ public class MedicamentoResponseDTO {
             String nombreGenerico,
             String presentacion,
             String dosificacion,
-            Boolean activo
+            Boolean activo,
+            String codigoBarras
     ) {
         this.id = id;
         this.nombreComercial = nombreComercial;
@@ -23,6 +26,7 @@ public class MedicamentoResponseDTO {
         this.presentacion = presentacion;
         this.dosificacion = dosificacion;
         this.activo = activo;
+        this.codigoBarras = codigoBarras;
     }
 
     public Long getId() {
@@ -47,5 +51,9 @@ public class MedicamentoResponseDTO {
 
     public Boolean getActivo() {
         return activo;
+    }
+
+    public String getCodigoBarras() {
+        return codigoBarras;
     }
 }

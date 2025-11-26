@@ -18,4 +18,9 @@ public interface MedicamentoService {
     void eliminar(Long id);
 
     List<MedicamentoResponseDTO> buscarPorTexto(String texto);
+    
+    MedicamentoResponseDTO buscarPorCodigoBarras(String codigoBarras);
+
+    String decodificarCodigoBarras(String codigoBarras);
+
 }

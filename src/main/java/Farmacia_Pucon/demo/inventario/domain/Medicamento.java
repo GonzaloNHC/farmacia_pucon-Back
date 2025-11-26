@@ -1,6 +1,7 @@
 package Farmacia_Pucon.demo.inventario.domain;
 
 import jakarta.persistence.*;
+import Farmacia_Pucon.demo.common.domain.CodigoBarras;
 
 @Entity
 @Table(name = "medicamentos")
@@ -23,7 +24,10 @@ public class Medicamento {
     private String dosificacion;
 
     @Column(name = "activo", nullable = false)
-    private Boolean activo = true;
+    private Boolean activo = true;  
+
+    @Embedded
+    private CodigoBarras codigoBarras;
 
     public Medicamento() {
     }
@@ -74,5 +78,13 @@ public class Medicamento {
 
     public void setActivo(Boolean activo) {
         this.activo = activo;
+    }
+
+    public CodigoBarras getCodigoBarras() {
+        return codigoBarras;
+    }
+
+    public void setCodigoBarras(CodigoBarras codigoBarras) {
+        this.codigoBarras = codigoBarras;
     }
 }

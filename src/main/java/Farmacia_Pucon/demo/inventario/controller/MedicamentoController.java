@@ -53,4 +53,16 @@ public class MedicamentoController {
     public ResponseEntity<List<MedicamentoResponseDTO>> buscar(@RequestParam("texto") String texto) {
         return ResponseEntity.ok(medicamentoService.buscarPorTexto(texto));
     }
+
+    @GetMapping("/codigo-barras/{codigo}")
+    public ResponseEntity<MedicamentoResponseDTO> buscarPorCodigoBarras(@PathVariable("codigo") String codigo) {
+        return ResponseEntity.ok(medicamentoService.buscarPorCodigoBarras(codigo));
+    }
+
+    @PostMapping("/codigo-barras/decodificar")
+    public ResponseEntity<String> decodificar(@RequestBody String codigo) {
+        String textoPlano = medicamentoService.decodificarCodigoBarras(codigo.trim());
+        return ResponseEntity.ok(textoPlano);
+    }
+
 }
