@@ -9,19 +9,15 @@ import Farmacia_Pucon.demo.inventario.repository.LoteRepository;
 import Farmacia_Pucon.demo.ventas.domain.DetalleVenta;
 import Farmacia_Pucon.demo.ventas.domain.Pago;
 import Farmacia_Pucon.demo.ventas.domain.Venta;
-import Farmacia_Pucon.demo.ventas.dto.ComprobantePacienteDTO;
-import Farmacia_Pucon.demo.ventas.dto.DetalleVentaDTO;
-import Farmacia_Pucon.demo.ventas.dto.PagoDTO;
-import Farmacia_Pucon.demo.ventas.dto.PagoRequest;
-import Farmacia_Pucon.demo.ventas.dto.ItemVentaRequest;
-import Farmacia_Pucon.demo.ventas.dto.RegistrarVentaRequest;
-import Farmacia_Pucon.demo.ventas.dto.VentaResponseDTO;
+import Farmacia_Pucon.demo.ventas.dto.*;
 import Farmacia_Pucon.demo.ventas.repository.DetalleVentaRepository;
 import Farmacia_Pucon.demo.ventas.repository.PagoRepository;
 import Farmacia_Pucon.demo.ventas.repository.VentaRepository;
 import Farmacia_Pucon.demo.ventas.service.VentaService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -52,78 +48,115 @@ public class VentaServiceImpl implements VentaService {
         this.userRepository = userRepository;
     }
 
+    // ================== Registrar Venta ==================
+
     @Override
     @Transactional
-    public VentaResponseDTO registrarVenta(RegistrarVentaRequest request, String usernameCajero) {
+    public VentaResponseDTO registrarVenta(RegistrarVentaRequest request) {
 
-        // Validaciones básicas
+        // ---- Validaciones de negocio obligatorias ----
+
+        if (request.getUsuarioId() == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Debe indicar un usuarioId para registrar la venta"
+            );
+        }
+
+        if (request.getPacienteId() == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Debe indicar un pacienteId para registrar la venta"
+            );
+        }
+
         if (request.getItems() == null || request.getItems().isEmpty()) {
-            throw new RuntimeException("La venta debe contener al menos un ítem");
-        }
-        if (request.getPagos() == null || request.getPagos().isEmpty()) {
-            throw new RuntimeException("La venta debe tener al menos un pago");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "La venta debe contener al menos un ítem"
+            );
         }
 
-        // 1) Calcular total de la venta a partir de los ítems
+        if (request.getPagos() == null || request.getPagos().isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "La venta debe tener al menos un pago"
+            );
+        }
+
+        // ---- Buscar usuario y paciente ----
+
+        User usuario = userRepository.findById(request.getUsuarioId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Usuario no encontrado para id: " + request.getUsuarioId()
+                ));
+
+        Paciente paciente = pacienteRepository.findById(request.getPacienteId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Paciente no encontrado para id: " + request.getPacienteId()
+                ));
+
+        // ---- Calcular total de la venta a partir de los ítems ----
+
         BigDecimal total = request.getItems().stream()
                 .map(item -> {
                     if (item.getCantidad() == null || item.getCantidad() <= 0) {
-                        throw new RuntimeException("La cantidad debe ser mayor a cero");
+                        throw new ResponseStatusException(
+                                HttpStatus.BAD_REQUEST,
+                                "La cantidad debe ser mayor a cero"
+                        );
                     }
                     if (item.getPrecioUnitario() == null ||
                             item.getPrecioUnitario().compareTo(BigDecimal.ZERO) <= 0) {
-                        throw new RuntimeException("El precioUnitario debe ser mayor a cero");
+                        throw new ResponseStatusException(
+                                HttpStatus.BAD_REQUEST,
+                                "El precioUnitario debe ser mayor a cero"
+                        );
                     }
                     return item.getPrecioUnitario()
                             .multiply(BigDecimal.valueOf(item.getCantidad()));
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // 2) Crear entidad Venta
+        // ---- Crear entidad Venta ----
+
         Venta venta = new Venta();
         venta.setFechaHora(LocalDateTime.now());
         venta.setTotal(total);
-        venta.setEstado("COMPLETADA"); // Podrías usar otros estados más adelante
-
-        // 2.a) Asociar usuario (cajero) a la venta
-        if (usernameCajero != null && !usernameCajero.isBlank()) {
-            User usuario = userRepository.findByUsername(usernameCajero)
-                    .orElseThrow(() -> new RuntimeException("Usuario (cajero) no encontrado: " + usernameCajero));
-            venta.setUsuario(usuario);
-        }
-
-        // 2.b) Asociar paciente a la venta (si viene en el request)
-        if (request.getPacienteId() != null) {
-            Paciente paciente = pacienteRepository.findById(request.getPacienteId())
-                    .orElseThrow(() ->
-                            new RuntimeException("Paciente no encontrado para id: " + request.getPacienteId())
-                    );
-            venta.setPaciente(paciente);
-        }
+        venta.setEstado("COMPLETADA");
+        venta.setUsuario(usuario);
+        venta.setPaciente(paciente);
 
         venta = ventaRepository.save(venta);
 
-        // 3) Crear DetalleVenta por cada ítem + VALIDACIÓN DE STOCK + DESCUENTO
+        // ---- Crear DetalleVenta por cada ítem + validar/descontar stock ----
+
         for (ItemVentaRequest itemReq : request.getItems()) {
 
             Lote lote = loteRepository.findById(itemReq.getLoteId())
-                    .orElseThrow(() ->
-                            new RuntimeException("Lote no encontrado para id: " + itemReq.getLoteId()));
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "Lote no encontrado para id: " + itemReq.getLoteId()
+                    ));
 
-            // ===== VALIDAR STOCK =====
+            // Validar stock
             if (lote.getCantidadDisponible() < itemReq.getCantidad()) {
-                throw new RuntimeException(
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
                         "Stock insuficiente en el lote " + lote.getCodigoLote() +
                                 ". Disponible: " + lote.getCantidadDisponible() +
                                 ", requerido: " + itemReq.getCantidad()
                 );
             }
 
-            // ===== DESCONTAR STOCK =====
-            lote.setCantidadDisponible(lote.getCantidadDisponible() - itemReq.getCantidad());
+            // Descontar stock
+            int nuevoStock = lote.getCantidadDisponible() - itemReq.getCantidad();
+            lote.setCantidadDisponible(nuevoStock);
             loteRepository.save(lote);
 
-            // ===== CREAR DETALLE =====
+            // Crear detalle
             DetalleVenta detalle = new DetalleVenta();
             detalle.setVenta(venta);
             detalle.setLote(lote);
@@ -137,12 +170,16 @@ public class VentaServiceImpl implements VentaService {
             detalleVentaRepository.save(detalle);
         }
 
-        // 4) Registrar pagos
+        // ---- Registrar pagos ----
+
         for (PagoRequest pagoReq : request.getPagos()) {
 
             if (pagoReq.getMonto() == null ||
                     pagoReq.getMonto().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new RuntimeException("El monto del pago debe ser mayor a cero");
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "El monto del pago debe ser mayor a cero"
+                );
             }
 
             Pago pago = new Pago();
@@ -154,18 +191,26 @@ public class VentaServiceImpl implements VentaService {
             pagoRepository.save(pago);
         }
 
-        // 5) Recargar venta desde BD con detalles y pagos ya asociados
+        // Recargar venta desde BD con detalles y pagos ya asociados
         Venta ventaGuardada = ventaRepository.findById(venta.getId())
-                .orElseThrow(() -> new RuntimeException("Error al recuperar la venta registrada"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Error al recuperar la venta registrada"
+                ));
 
         return mapToResponse(ventaGuardada);
     }
+
+    // ================== Obtener y listar ==================
 
     @Override
     @Transactional(readOnly = true)
     public VentaResponseDTO obtenerVenta(Long id) {
         Venta venta = ventaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Venta no encontrada"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Venta no encontrada"
+                ));
         return mapToResponse(venta);
     }
 
@@ -178,23 +223,26 @@ public class VentaServiceImpl implements VentaService {
                 .collect(Collectors.toList());
     }
 
-    // ================== HU-20: Comprobante de Paciente ==================
+    // ================== Comprobante Paciente ==================
 
     @Override
     @Transactional(readOnly = true)
     public ComprobantePacienteDTO generarComprobantePaciente(Long ventaId) {
 
-        // 1) Buscar la venta
         Venta venta = ventaRepository.findById(ventaId)
-                .orElseThrow(() -> new RuntimeException("Venta no encontrada con id: " + ventaId));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Venta no encontrada con id: " + ventaId
+                ));
 
-        // 2) Verificar que tenga paciente asociado
         Paciente paciente = venta.getPaciente();
         if (paciente == null) {
-            throw new RuntimeException("La venta no tiene un paciente asociado, no se puede generar el comprobante.");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "La venta no tiene un paciente asociado, no se puede generar el comprobante."
+            );
         }
 
-        // 3) Mapear detalles y pagos
         List<DetalleVentaDTO> detallesDTO = venta.getDetalles().stream()
                 .map(this::mapDetalleToDTO)
                 .collect(Collectors.toList());
@@ -203,7 +251,6 @@ public class VentaServiceImpl implements VentaService {
                 .map(this::mapPagoToDTO)
                 .collect(Collectors.toList());
 
-        // 4) Construir el comprobante
         ComprobantePacienteDTO comprobante = new ComprobantePacienteDTO();
         comprobante.setIdVenta(venta.getId());
         comprobante.setFechaHoraVenta(venta.getFechaHora());
@@ -235,6 +282,13 @@ public class VentaServiceImpl implements VentaService {
         dto.setFechaHora(venta.getFechaHora());
         dto.setTotal(venta.getTotal());
         dto.setEstado(venta.getEstado());
+
+        if (venta.getUsuario() != null) {
+            dto.setNombreUsuario(venta.getUsuario().getNombreCompleto());
+        }
+        if (venta.getPaciente() != null) {
+            dto.setNombrePaciente(venta.getPaciente().getNombreCompleto());
+        }
 
         List<DetalleVentaDTO> detalles = venta.getDetalles().stream()
                 .map(this::mapDetalleToDTO)

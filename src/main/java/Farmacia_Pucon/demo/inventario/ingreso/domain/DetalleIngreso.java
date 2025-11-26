@@ -4,6 +4,7 @@ import Farmacia_Pucon.demo.inventario.domain.Medicamento;
 import Farmacia_Pucon.demo.inventario.domain.Lote;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -28,7 +29,7 @@ public class DetalleIngreso {
 
     private Integer cantidad;
     private LocalDate fechaVencimiento;
-    private Double precioCompra;
+    private BigDecimal precioCompra;
 
     public Long getId() {
         return id;
@@ -74,11 +75,11 @@ public class DetalleIngreso {
         this.fechaVencimiento = fechaVencimiento;
     }
 
-    public Double getPrecioCompra() {
+    public BigDecimal getPrecioCompra() {
         return precioCompra;
     }
 
-    public void setPrecioCompra(Double precioCompra) {
+    public void setPrecioCompra(BigDecimal precioCompra) {
         this.precioCompra = precioCompra;
     }
 }

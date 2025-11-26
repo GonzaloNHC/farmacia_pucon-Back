@@ -9,6 +9,9 @@ import Farmacia_Pucon.demo.authentication.paciente.dto.PacienteResponseDTO;
 import Farmacia_Pucon.demo.authentication.paciente.repository.PacienteRepository;
 import Farmacia_Pucon.demo.authentication.paciente.service.PacienteService;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @Transactional
 public class PacienteServiceImpl implements PacienteService {
@@ -54,6 +57,43 @@ public class PacienteServiceImpl implements PacienteService {
                 .orElseThrow(() -> new IllegalArgumentException("Paciente no encontrado"));
         return mapToResponse(paciente);
     }
+
+    // ===== NUEVOS MÉTODOS =====
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PacienteResponseDTO> listarPacientes() {
+        return pacienteRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public PacienteResponseDTO actualizarPaciente(Long id, PacienteRequestDTO request) {
+        Paciente paciente = pacienteRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Paciente no encontrado"));
+
+        // Actualizar campos
+        paciente.setRut(request.getRut());
+        paciente.setNombreCompleto(request.getNombreCompleto());
+        paciente.setTelefono(request.getTelefono());
+        paciente.setDireccion(request.getDireccion());
+        paciente.setEmail(request.getEmail());
+
+        Paciente actualizado = pacienteRepository.save(paciente);
+        return mapToResponse(actualizado);
+    }
+
+    @Override
+    public void eliminarPaciente(Long id) {
+        if (!pacienteRepository.existsById(id)) {
+            throw new IllegalArgumentException("Paciente no encontrado");
+        }
+        pacienteRepository.deleteById(id);
+    }
+
+    // ===== MAPPER =====
 
     private PacienteResponseDTO mapToResponse(Paciente paciente) {
         return new PacienteResponseDTO(

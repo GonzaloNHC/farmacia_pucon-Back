@@ -2,6 +2,7 @@ package Farmacia_Pucon.demo.inventario.controller;
 
 import Farmacia_Pucon.demo.inventario.dto.MedicamentoRequestDTO;
 import Farmacia_Pucon.demo.inventario.dto.MedicamentoResponseDTO;
+import Farmacia_Pucon.demo.inventario.repository.MedicamentoRepository;
 import Farmacia_Pucon.demo.inventario.service.MedicamentoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +15,11 @@ import java.util.List;
 public class MedicamentoController {
 
     private final MedicamentoService medicamentoService;
+    private final MedicamentoRepository medicamentoRepository;
 
-    public MedicamentoController(MedicamentoService medicamentoService) {
+    public MedicamentoController(MedicamentoService medicamentoService, MedicamentoRepository medicamentoRepository) {
         this.medicamentoService = medicamentoService;
+        this.medicamentoRepository = medicamentoRepository;
     }
 
     @PostMapping

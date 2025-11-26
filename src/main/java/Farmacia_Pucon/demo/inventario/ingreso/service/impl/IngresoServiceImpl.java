@@ -16,6 +16,7 @@ import Farmacia_Pucon.demo.inventario.repository.MedicamentoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,6 +38,8 @@ public class IngresoServiceImpl implements IngresoService {
         this.medicamentoRepository = medicamentoRepository;
         this.loteRepository = loteRepository;
     }
+
+    // ================== CREAR ==================
 
     @Override
     @Transactional
@@ -80,8 +83,17 @@ public class IngresoServiceImpl implements IngresoService {
             lote.setFechaVencimiento(detReq.getFechaVencimiento());
             lote.setStockInicial(detReq.getCantidad());
             lote.setCantidadDisponible(detReq.getCantidad());
-            lote.setStockMinimo(0); // puedes cambiar esto si manejas stock mínimo
+            lote.setPrecioUnitario(detReq.getPrecioCompra());
+            lote.setStockMinimo(0); //
             lote.setActivo(true);
+
+            BigDecimal precioUnitario = detReq.getPrecioCompra();  // ya es BigDecimal
+            lote.setPrecioUnitario(precioUnitario);
+
+            BigDecimal precioTotal = precioUnitario.multiply(
+                    BigDecimal.valueOf(detReq.getCantidad())
+            );
+            lote.setPrecioTotalLote(precioTotal);
 
             lote = loteRepository.save(lote);
 
@@ -104,7 +116,10 @@ public class IngresoServiceImpl implements IngresoService {
         return mapToResponse(ingresoGuardado);
     }
 
+    // ================== LEER ==================
+
     @Override
+    @Transactional(readOnly = true)
     public IngresoResponseDTO obtenerIngreso(Long id) {
         Ingreso ingreso = ingresoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ingreso no encontrado"));
@@ -112,11 +127,49 @@ public class IngresoServiceImpl implements IngresoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<IngresoResponseDTO> listarIngresos() {
         return ingresoRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+
+    // ================== ACTUALIZAR ==================
+    // Para no romper stock ni lotes, solo permitimos cambiar la observación.
+
+    @Override
+    @Transactional
+    public IngresoResponseDTO actualizarIngreso(Long id, CrearIngresoRequest request) {
+
+        Ingreso ingreso = ingresoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ingreso no encontrado"));
+
+        // Por ahora solo actualizamos la observación
+        ingreso.setObservacion(request.getObservacion());
+
+        Ingreso actualizado = ingresoRepository.save(ingreso);
+
+        return mapToResponse(actualizado);
+    }
+
+    // ================== ELIMINAR ==================
+    // Eliminamos ingreso y sus detalles. No tocamos lotes para no romper ventas.
+
+    @Override
+    @Transactional
+    public void eliminarIngreso(Long id) {
+
+        Ingreso ingreso = ingresoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ingreso no encontrado"));
+
+        // Borrar primero detalles (por FK)
+        if (ingreso.getDetalles() != null && !ingreso.getDetalles().isEmpty()) {
+            detalleIngresoRepository.deleteAll(ingreso.getDetalles());
+        }
+
+        // Luego el ingreso
+        ingresoRepository.delete(ingreso);
     }
 
     // ================== MAPEOS A DTO ==================

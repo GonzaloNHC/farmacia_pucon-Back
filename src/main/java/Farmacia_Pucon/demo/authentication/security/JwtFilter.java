@@ -14,6 +14,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * Filtro JWT para validar tokens en cada request.
+ */
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
@@ -32,8 +35,20 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
+        // ==========================
+        // IGNORAR ENDPOINTS PÚBLICOS
+        // ==========================
+        String path = request.getServletPath();
 
+        if (path.startsWith("/api/auth/") || path.startsWith("/h2") || path.startsWith("/swagger")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // ==========================
+        // OBTENER JWT DEL HEADER
+        // ==========================
+        final String authHeader = request.getHeader("Authorization");
         String username = null;
         String jwt = null;
 
@@ -42,6 +57,9 @@ public class JwtFilter extends OncePerRequestFilter {
             username = jwtUtil.extractUsername(jwt);
         }
 
+        // ==========================
+        // VALIDAR JWT
+        // ==========================
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -61,6 +79,7 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
 
+        // Continuar con el filtro
         filterChain.doFilter(request, response);
     }
 }

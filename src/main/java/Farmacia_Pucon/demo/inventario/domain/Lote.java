@@ -2,6 +2,7 @@ package Farmacia_Pucon.demo.inventario.domain;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -17,6 +18,13 @@ public class Lote {
 
     @Column(name = "fecha_vencimiento", nullable = false)
     private LocalDate fechaVencimiento;
+
+    //Precio Unitario
+    @Column(name = "precio_unitario", nullable = false)
+    private BigDecimal precioUnitario;
+
+    @Column(name = "precio_total", nullable = false)
+    private BigDecimal precioTotalLote;
 
     //El actual
     @Column(name = "cantidad_disponible", nullable = false)
@@ -61,6 +69,22 @@ public class Lote {
 
     public void setFechaVencimiento(LocalDate fechaVencimiento) {
         this.fechaVencimiento = fechaVencimiento;
+    }
+
+    public BigDecimal getPrecioUnitario() {
+        return precioUnitario;
+    }
+
+    public void setPrecioUnitario(BigDecimal precioUnitario) {
+        this.precioUnitario = precioUnitario;
+    }
+
+    public BigDecimal getPrecioTotalLote() {
+        return precioTotalLote;
+    }
+
+    public void setPrecioTotalLote(BigDecimal precioTotalLote) {
+        this.precioTotalLote = precioTotalLote;
     }
 
     public Integer getCantidadDisponible() {
