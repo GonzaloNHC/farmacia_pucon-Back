@@ -7,7 +7,7 @@ import Farmacia_Pucon.demo.inventario.domain.Lote;
 import Farmacia_Pucon.demo.inventario.domain.MovimientoInventario;
 import Farmacia_Pucon.demo.inventario.repository.MovimientoInventarioRepository;
 import Farmacia_Pucon.demo.inventario.stock.dto.*;
-import Farmacia_Pucon.demo.inventario.stock.dto.DevolucionStockRequest;
+import Farmacia_Pucon.demo.inventario.dto.DevolucionStockRequest;
 import Farmacia_Pucon.demo.inventario.stock.service.LoteService;
 import org.springframework.stereotype.Service;
 

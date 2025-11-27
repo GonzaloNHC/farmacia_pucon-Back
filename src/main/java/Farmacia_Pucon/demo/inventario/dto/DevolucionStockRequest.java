@@ -1,4 +1,4 @@
-package Farmacia_Pucon.demo.inventario.stock.dto;
+package Farmacia_Pucon.demo.inventario.dto;
 
 public class DevolucionStockRequest {
 

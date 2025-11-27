@@ -16,10 +16,8 @@ public interface MedicamentoRepository extends JpaRepository<Medicamento, Long> 
 
     List<Medicamento> findByNombreGenericoContainingIgnoreCase(String texto);
 
-<<<<<<< HEAD
     Optional<Medicamento> findByCodigoBarras_Valor(String valor);
 
-=======
     @Query("""
            SELECT m 
            FROM Medicamento m
@@ -30,5 +28,4 @@ public interface MedicamentoRepository extends JpaRepository<Medicamento, Long> 
              )
            """)
     List<Medicamento> buscarActivosPorNombre(@Param("query") String query);
->>>>>>> feature/devpeque
 }
