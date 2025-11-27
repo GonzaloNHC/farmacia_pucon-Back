@@ -41,6 +41,16 @@ public class MedicamentoServiceImpl implements MedicamentoService {
             entity.setActivo(true);
         }
 
+        entity.setIndicaciones(request.getIndicaciones());
+        entity.setContraindicaciones(request.getContraindicaciones());
+        entity.setAdvertencias(request.getAdvertencias());
+        entity.setInteracciones(request.getInteracciones());
+
+        //Normativa
+        entity.setRequiereReceta(request.getRequiereReceta());
+        entity.setTipoReceta(request.getTipoReceta());
+        entity.setControlado(request.getControlado());
+
         // ⚠️ IMPORTANTE: aquí NO usamos request.getCodigoBarras()
         // Generamos el código de barras encriptado a partir de los datos del medicamento
         CodigoBarras codigo = codigoBarrasService.generarParaMedicamento(entity);
@@ -59,6 +69,16 @@ public class MedicamentoServiceImpl implements MedicamentoService {
         entity.setNombreGenerico(request.getNombreGenerico());
         entity.setPresentacion(request.getPresentacion());
         entity.setDosificacion(request.getDosificacion());
+
+        entity.setIndicaciones(request.getIndicaciones());
+        entity.setContraindicaciones(request.getContraindicaciones());
+        entity.setAdvertencias(request.getAdvertencias());
+        entity.setInteracciones(request.getInteracciones());
+
+        // 🔹 Normativa
+        entity.setRequiereReceta(request.getRequiereReceta());
+        entity.setTipoReceta(request.getTipoReceta());
+        entity.setControlado(request.getControlado());
 
         CodigoBarras codigo = codigoBarrasService.generarParaMedicamento(entity);
         entity.setCodigoBarras(codigo);
@@ -142,7 +162,15 @@ public class MedicamentoServiceImpl implements MedicamentoService {
                 entity.getPresentacion(),
                 entity.getDosificacion(),
                 entity.getActivo(),
-                codigo
+                codigo,
+                entity.getIndicaciones(),
+                entity.getContraindicaciones(),
+                entity.getAdvertencias(),
+                entity.getInteracciones(),
+                entity.getRequiereReceta(),
+                entity.getTipoReceta(),
+                entity.getControlado()
+
         );
     }
 }
