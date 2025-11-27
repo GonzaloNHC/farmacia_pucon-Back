@@ -118,4 +118,3 @@ public class Venta {
         this.pagos.add(pago);
     }
 }
-

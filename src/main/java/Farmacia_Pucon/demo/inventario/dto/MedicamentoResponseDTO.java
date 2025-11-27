@@ -9,6 +9,13 @@ public class MedicamentoResponseDTO {
     private String dosificacion;
     private Boolean activo;
     private String codigoBarras;
+    private String indicaciones;
+    private String contraindicaciones;
+    private String advertencias;
+    private String interacciones;
+    private Boolean requiereReceta;
+    private String tipoReceta;
+    private Boolean controlado;
 
 
     public MedicamentoResponseDTO(
@@ -18,7 +25,14 @@ public class MedicamentoResponseDTO {
             String presentacion,
             String dosificacion,
             Boolean activo,
-            String codigoBarras
+            String codigoBarras,
+            String indicaciones,
+            String contraindicaciones,
+            String advertencias,
+            String interacciones,
+            Boolean requiereReceta,
+            String tipoReceta,
+            Boolean controlado
     ) {
         this.id = id;
         this.nombreComercial = nombreComercial;
@@ -27,6 +41,13 @@ public class MedicamentoResponseDTO {
         this.dosificacion = dosificacion;
         this.activo = activo;
         this.codigoBarras = codigoBarras;
+        this.indicaciones = indicaciones;
+        this.contraindicaciones = contraindicaciones;
+        this.advertencias = advertencias;
+        this.interacciones = interacciones;
+        this.requiereReceta = requiereReceta;
+        this.tipoReceta = tipoReceta;
+        this.controlado = controlado;
     }
 
     public Long getId() {
@@ -56,4 +77,33 @@ public class MedicamentoResponseDTO {
     public String getCodigoBarras() {
         return codigoBarras;
     }
+
+    public String getIndicaciones() {
+        return indicaciones;
+    }
+
+    public String getContraindicaciones() {
+        return contraindicaciones;
+    }
+
+    public String getAdvertencias() {
+        return advertencias;
+    }
+
+    public String getInteracciones() {
+        return interacciones;
+    }
+
+    public Boolean getRequiereReceta() {
+        return requiereReceta;
+    }
+
+    public String getTipoReceta() {
+        return tipoReceta;
+    }
+
+    public Boolean getControlado() {
+        return controlado;
+    }
+
 }
