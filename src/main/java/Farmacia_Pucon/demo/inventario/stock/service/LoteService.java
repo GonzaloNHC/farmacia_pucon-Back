@@ -22,4 +22,7 @@ public interface LoteService {
     LoteResponseDTO registrarMovimiento(RegistrarMovimientoRequest request);
 
     void desactivar(Long id);
+
+    LoteResponseDTO devolverStockPorVenta(DevolucionVentaRequest request);
+
 }

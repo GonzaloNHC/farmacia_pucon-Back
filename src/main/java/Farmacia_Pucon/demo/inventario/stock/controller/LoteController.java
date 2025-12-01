@@ -31,6 +31,12 @@ public class LoteController {
     ) {
         return ResponseEntity.ok(loteService.registrarMovimiento(request));
     }
+    @PostMapping("/devoluciones/venta")
+    public ResponseEntity<LoteResponseDTO> devolverPorVenta(
+        @RequestBody DevolucionVentaRequest request
+    ) {
+    return ResponseEntity.ok(loteService.devolverStockPorVenta(request));
+    }
 
     @GetMapping
     public ResponseEntity<List<LoteResponseDTO>> listarTodos() {

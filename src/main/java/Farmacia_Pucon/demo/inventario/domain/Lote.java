@@ -1,7 +1,6 @@
 package Farmacia_Pucon.demo.inventario.domain;
 
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -19,18 +18,19 @@ public class Lote {
     @Column(name = "fecha_vencimiento", nullable = false)
     private LocalDate fechaVencimiento;
 
-    //Precio Unitario
+    // Precio unitario de venta
     @Column(name = "precio_unitario", nullable = false)
     private BigDecimal precioUnitario;
 
+    // Precio total del lote (precioUnitario * stockInicial)
     @Column(name = "precio_total", nullable = false)
     private BigDecimal precioTotalLote;
 
-    //El actual
+    // Stock disponible actual
     @Column(name = "cantidad_disponible", nullable = false)
     private Integer cantidadDisponible;
 
-    //El que llegó a la farmacia
+    // Stock con el que llegó a la farmacia
     @Column(name = "stock_inicial", nullable = false)
     private Integer stockInicial;
 
@@ -40,12 +40,22 @@ public class Lote {
     @Column(name = "activo", nullable = false)
     private Boolean activo = true;
 
+    // 🔥 NUEVOS CAMPOS PARA HU17
+    @Column(name = "costo")
+    private BigDecimal costo;
+
+    @Column(name = "fecha_ingreso")
+    private LocalDate fechaIngreso;
+
+    // Relación con medicamento
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "medicamento_id", nullable = false)
     private Medicamento medicamento;
 
     public Lote() {
     }
+
+    // ---------------- GETTERS & SETTERS ----------------
 
     public Long getId() {
         return id;
@@ -125,5 +135,23 @@ public class Lote {
 
     public void setMedicamento(Medicamento medicamento) {
         this.medicamento = medicamento;
+    }
+
+    // 🔥 GETTERS & SETTERS NUEVOS
+
+    public BigDecimal getCosto() {
+        return costo;
+    }
+
+    public void setCosto(BigDecimal costo) {
+        this.costo = costo;
+    }
+
+    public LocalDate getFechaIngreso() {
+        return fechaIngreso;
+    }
+
+    public void setFechaIngreso(LocalDate fechaIngreso) {
+        this.fechaIngreso = fechaIngreso;
     }
 }

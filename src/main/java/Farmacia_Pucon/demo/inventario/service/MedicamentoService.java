@@ -5,6 +5,8 @@ import Farmacia_Pucon.demo.inventario.dto.MedicamentoResponseDTO;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public interface MedicamentoService {
 
     MedicamentoResponseDTO crear(MedicamentoRequestDTO request);
@@ -17,10 +19,21 @@ public interface MedicamentoService {
 
     void eliminar(Long id);
 
+    // Búsqueda general (nombre comercial o genérico)
     List<MedicamentoResponseDTO> buscarPorTexto(String texto);
-    
+
+    // Buscar por código de barras
     MedicamentoResponseDTO buscarPorCodigoBarras(String codigoBarras);
 
+    // Decodificar desde lector
     String decodificarCodigoBarras(String codigoBarras);
 
+    // Búsquedas específicas
+    List<MedicamentoResponseDTO> buscarPorCategoria(String categoria);
+
+    List<MedicamentoResponseDTO> buscarPorTipoVenta(String tipoVenta);
+
+    List<MedicamentoResponseDTO> buscarPorLaboratorio(String laboratorio);
+
+    List<MedicamentoResponseDTO> buscarPorFormaFarmaceutica(String formaFarmaceutica);
 }

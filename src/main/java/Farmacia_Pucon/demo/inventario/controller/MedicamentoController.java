@@ -2,10 +2,13 @@ package Farmacia_Pucon.demo.inventario.controller;
 
 import Farmacia_Pucon.demo.inventario.dto.MedicamentoRequestDTO;
 import Farmacia_Pucon.demo.inventario.dto.MedicamentoResponseDTO;
-import Farmacia_Pucon.demo.inventario.repository.MedicamentoRepository;
 import Farmacia_Pucon.demo.inventario.service.MedicamentoService;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
@@ -15,17 +18,34 @@ import java.util.List;
 public class MedicamentoController {
 
     private final MedicamentoService medicamentoService;
-    private final MedicamentoRepository medicamentoRepository;
 
-    public MedicamentoController(MedicamentoService medicamentoService, MedicamentoRepository medicamentoRepository) {
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    public MedicamentoController(MedicamentoService medicamentoService) {
         this.medicamentoService = medicamentoService;
-        this.medicamentoRepository = medicamentoRepository;
     }
+
+    // =====================
+    // CRUD
+    // =====================
 
     @PostMapping
-    public ResponseEntity<MedicamentoResponseDTO> crear(@RequestBody MedicamentoRequestDTO request) {
-        return ResponseEntity.ok(medicamentoService.crear(request));
+    public List<MedicamentoResponseDTO> crear(@RequestBody Object body) {
+
+        if (body instanceof List<?> lista) {
+            return lista.stream()
+                    .map(item -> objectMapper.convertValue(item, MedicamentoRequestDTO.class))
+                    .map(medicamentoService::crear)
+                    .toList();
+        }
+
+        MedicamentoRequestDTO request =
+                objectMapper.convertValue(body, MedicamentoRequestDTO.class);
+
+        return List.of(medicamentoService.crear(request));
     }
+
 
     @GetMapping
     public ResponseEntity<List<MedicamentoResponseDTO>> listar() {
@@ -51,11 +71,46 @@ public class MedicamentoController {
         return ResponseEntity.noContent().build();
     }
 
-    // Endpoint para buscar por texto (nombre comercial o genérico)
+    // =====================
+    // BÚSQUEDAS AVANZADAS
+    // =====================
+
     @GetMapping("/buscar")
     public ResponseEntity<List<MedicamentoResponseDTO>> buscar(@RequestParam("texto") String texto) {
         return ResponseEntity.ok(medicamentoService.buscarPorTexto(texto));
     }
+
+    @GetMapping("/buscar/categoria")
+    public ResponseEntity<List<MedicamentoResponseDTO>> buscarPorCategoria(
+            @RequestParam("value") String categoria
+    ) {
+        return ResponseEntity.ok(medicamentoService.buscarPorCategoria(categoria));
+    }
+
+    @GetMapping("/buscar/tipo-venta")
+    public ResponseEntity<List<MedicamentoResponseDTO>> buscarPorTipoVenta(
+            @RequestParam("value") String tipoVenta
+    ) {
+        return ResponseEntity.ok(medicamentoService.buscarPorTipoVenta(tipoVenta));
+    }
+
+    @GetMapping("/buscar/laboratorio")
+    public ResponseEntity<List<MedicamentoResponseDTO>> buscarPorLaboratorio(
+            @RequestParam("value") String laboratorio
+    ) {
+        return ResponseEntity.ok(medicamentoService.buscarPorLaboratorio(laboratorio));
+    }
+
+    @GetMapping("/buscar/forma-farmaceutica")
+    public ResponseEntity<List<MedicamentoResponseDTO>> buscarPorFormaFarmaceutica(
+            @RequestParam("value") String forma
+    ) {
+        return ResponseEntity.ok(medicamentoService.buscarPorFormaFarmaceutica(forma));
+    }
+
+    // =====================
+    // CÓDIGO DE BARRAS
+    // =====================
 
     @GetMapping("/codigo-barras/{codigo}")
     public ResponseEntity<MedicamentoResponseDTO> buscarPorCodigoBarras(@PathVariable("codigo") String codigo) {
@@ -64,8 +119,8 @@ public class MedicamentoController {
 
     @PostMapping("/codigo-barras/decodificar")
     public ResponseEntity<String> decodificar(@RequestBody String codigo) {
-        String textoPlano = medicamentoService.decodificarCodigoBarras(codigo.trim());
-        return ResponseEntity.ok(textoPlano);
+        return ResponseEntity.ok(
+                medicamentoService.decodificarCodigoBarras(codigo.trim())
+        );
     }
-
 }

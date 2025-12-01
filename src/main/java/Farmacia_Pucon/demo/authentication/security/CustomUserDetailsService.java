@@ -36,12 +36,12 @@ public class CustomUserDetailsService implements UserDetailsService {
                 authorities.add(new SimpleGrantedAuthority(role.getNombre().toUpperCase()))
         );
 
-        // Permisos en mayúsculas
-        user.getRoles().forEach(role ->
-                role.getPermissions().forEach(permission ->
-                        authorities.add(new SimpleGrantedAuthority(permission.getCodigo().toUpperCase()))
-                )
-        );
+// Permisos en mayúsculas
+// user.getRoles().forEach(role ->
+//        role.getPermissions().forEach(permission ->
+//                authorities.add(new SimpleGrantedAuthority(permission.getCodigo().toUpperCase()))
+//        )
+// );
 
         // Crear UserDetails asegurando account activo
         return org.springframework.security.core.userdetails.User.builder()

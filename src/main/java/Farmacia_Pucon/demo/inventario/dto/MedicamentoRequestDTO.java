@@ -6,8 +6,14 @@ public class MedicamentoRequestDTO {
     private String nombreGenerico;
     private String presentacion;
     private String dosificacion;
-    private Boolean activo; // si viene null se asume true en el service
-    private String codigoBarras;
+
+    private String categoria;           // Analgésicos, Antiinflamatorios, etc.
+    private String tipoVenta;           // LIBRE, RECETA_SIMPLE, RECETA_RETENIDA, CONTROLADO
+    private String laboratorio;         // Bayer, Pfizer, etc.
+    private String formaFarmaceutica;   // Comprimidos, Cápsulas, Jarabe, etc.
+
+    private Boolean activo;             // Si viene null → service lo deja en true
+    private String codigoBarras;        // Texto plano desde frontend
 
     public MedicamentoRequestDTO() {
     }
@@ -42,6 +48,38 @@ public class MedicamentoRequestDTO {
 
     public void setDosificacion(String dosificacion) {
         this.dosificacion = dosificacion;
+    }
+
+    public String getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
+    }
+
+    public String getTipoVenta() {
+        return tipoVenta;
+    }
+
+    public void setTipoVenta(String tipoVenta) {
+        this.tipoVenta = tipoVenta;
+    }
+
+    public String getLaboratorio() {
+        return laboratorio;
+    }
+
+    public void setLaboratorio(String laboratorio) {
+        this.laboratorio = laboratorio;
+    }
+
+    public String getFormaFarmaceutica() {
+        return formaFarmaceutica;
+    }
+
+    public void setFormaFarmaceutica(String formaFarmaceutica) {
+        this.formaFarmaceutica = formaFarmaceutica;
     }
 
     public Boolean getActivo() {

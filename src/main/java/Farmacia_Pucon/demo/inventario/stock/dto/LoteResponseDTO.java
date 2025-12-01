@@ -17,6 +17,11 @@ public class LoteResponseDTO {
     private Integer cantidadDisponible;
     private Boolean activo;
 
+    // 🔥 NUEVOS CAMPOS HU17
+    private BigDecimal costo;
+    private LocalDate fechaIngreso;
+
+    // ---------------------- CONSTRUCTOR ACTUAL (NO TOCAR) ----------------------
     public LoteResponseDTO(
             Long id,
             Long medicamentoId,
@@ -43,6 +48,41 @@ public class LoteResponseDTO {
         this.activo = activo;
     }
 
+    // 🔥 NUEVO CONSTRUCTOR EXTENDIDO PARA HU17
+    public LoteResponseDTO(
+            Long id,
+            Long medicamentoId,
+            String nombreMedicamento,
+            String codigoLote,
+            LocalDate fechaVencimiento,
+            BigDecimal precioUnitario,
+            BigDecimal precioTotalLote,
+            Integer stockInicial,
+            Integer stockMinimo,
+            Integer cantidadDisponible,
+            Boolean activo,
+            BigDecimal costo,
+            LocalDate fechaIngreso
+    ) {
+        this(
+                id,
+                medicamentoId,
+                nombreMedicamento,
+                codigoLote,
+                fechaVencimiento,
+                precioUnitario,
+                precioTotalLote,
+                stockInicial,
+                stockMinimo,
+                cantidadDisponible,
+                activo
+        );
+        this.costo = costo;
+        this.fechaIngreso = fechaIngreso;
+    }
+
+    // ---------------------- GETTERS ----------------------
+
     public Long getId() {
         return id;
     }
@@ -67,7 +107,9 @@ public class LoteResponseDTO {
         return precioUnitario;
     }
 
-    public BigDecimal getPrecioTotalLote() {return precioTotalLote;}
+    public BigDecimal getPrecioTotalLote() {
+        return precioTotalLote;
+    }
 
     public Integer getStockInicial() {
         return stockInicial;
@@ -83,5 +125,13 @@ public class LoteResponseDTO {
 
     public Boolean getActivo() {
         return activo;
+    }
+
+    public BigDecimal getCosto() {
+        return costo;
+    }
+
+    public LocalDate getFechaIngreso() {
+        return fechaIngreso;
     }
 }
