@@ -1,7 +1,7 @@
 package Farmacia_Pucon.demo.inventario.stock.controller;
 
 import Farmacia_Pucon.demo.inventario.stock.dto.*;
-import Farmacia_Pucon.demo.inventario.stock.dto.DevolucionStockRequest;
+import Farmacia_Pucon.demo.inventario.dto.DevolucionStockRequest;
 import Farmacia_Pucon.demo.inventario.stock.service.LoteService;
 
 import org.springframework.http.ResponseEntity;
