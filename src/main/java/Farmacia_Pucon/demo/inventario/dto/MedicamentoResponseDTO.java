@@ -16,6 +16,13 @@ public class MedicamentoResponseDTO {
 
     private Boolean activo;
     private String codigoBarras;
+    private String indicaciones;
+    private String contraindicaciones;
+    private String advertencias;
+    private String interacciones;
+    private Boolean requiereReceta;
+    private String tipoReceta;
+    private Boolean controlado;
 
     public MedicamentoResponseDTO(
             Long id,
@@ -28,7 +35,14 @@ public class MedicamentoResponseDTO {
             String laboratorio,
             String formaFarmaceutica,
             Boolean activo,
-            String codigoBarras
+            String codigoBarras,
+            String indicaciones,
+            String contraindicaciones,
+            String advertencias,
+            String interacciones,
+            Boolean requiereReceta,
+            String tipoReceta,
+            Boolean controlado
     ) {
         this.id = id;
         this.nombreComercial = nombreComercial;
@@ -41,6 +55,13 @@ public class MedicamentoResponseDTO {
         this.formaFarmaceutica = formaFarmaceutica;
         this.activo = activo;
         this.codigoBarras = codigoBarras;
+        this.indicaciones = indicaciones;
+        this.contraindicaciones = contraindicaciones;
+        this.advertencias = advertencias;
+        this.interacciones = interacciones;
+        this.requiereReceta = requiereReceta;
+        this.tipoReceta = tipoReceta;
+        this.controlado = controlado;
     }
 
     public Long getId() { return id; }
