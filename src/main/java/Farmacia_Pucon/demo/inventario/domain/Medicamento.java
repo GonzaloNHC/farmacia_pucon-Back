@@ -23,6 +23,18 @@ public class Medicamento {
     @Column(name = "dosificacion", nullable = false)
     private String dosificacion;
 
+    @Column(name = "categoria")
+    private String categoria; // Ej: Analgésicos, Antiinflamatorios, Antibióticos
+
+    @Column(name = "tipo_venta")
+    private String tipoVenta; // LIBRE, RECETA_SIMPLE, RECETA_RETENIDA, CONTROLADO
+
+    @Column(name = "laboratorio")
+    private String laboratorio;
+
+    @Column(name = "forma_farmaceutica")
+    private String formaFarmaceutica; // Comprimidos, Cápsulas, Jarabe, Gotas, etc.
+
     @Column(name = "activo", nullable = false)
     private Boolean activo = true;
 
@@ -96,6 +108,38 @@ public class Medicamento {
 
     public void setDosificacion(String dosificacion) {
         this.dosificacion = dosificacion;
+    }
+
+    public String getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
+    }
+
+    public String getTipoVenta() {
+        return tipoVenta;
+    }
+
+    public void setTipoVenta(String tipoVenta) {
+        this.tipoVenta = tipoVenta;
+    }
+
+    public String getLaboratorio() {
+        return laboratorio;
+    }
+
+    public void setLaboratorio(String laboratorio) {
+        this.laboratorio = laboratorio;
+    }
+
+    public String getFormaFarmaceutica() {
+        return formaFarmaceutica;
+    }
+
+    public void setFormaFarmaceutica(String formaFarmaceutica) {
+        this.formaFarmaceutica = formaFarmaceutica;
     }
 
     public Boolean getActivo() {

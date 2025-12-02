@@ -1,6 +1,7 @@
 package Farmacia_Pucon.demo.ventas.controller;
 
 import Farmacia_Pucon.demo.ventas.dto.RegistrarVentaRequest;
+import Farmacia_Pucon.demo.inventario.stock.dto.LoteVentaDTO;
 import Farmacia_Pucon.demo.ventas.dto.ComprobantePacienteDTO;
 import Farmacia_Pucon.demo.ventas.dto.VentaResponseDTO;
 import Farmacia_Pucon.demo.ventas.service.VentaService;
@@ -33,6 +34,12 @@ public class VentaController {
         return ResponseEntity.ok(ventaService.obtenerVenta(id));
     }
 
+    //modulo inventario
+    @GetMapping("/{id}/lotes")
+    public ResponseEntity<List<LoteVentaDTO>> obtenerLotesPorVenta(@PathVariable Long id) {
+    return ResponseEntity.ok(ventaService.obtenerLotesPorVenta(id));
+    }
+
     @GetMapping("/{id}/comprobante-paciente")
     public ResponseEntity<ComprobantePacienteDTO> obtenerComprobantePaciente(@PathVariable Long id) {
         ComprobantePacienteDTO comprobante = ventaService.generarComprobantePaciente(id);
@@ -43,4 +50,6 @@ public class VentaController {
     public ResponseEntity<List<VentaResponseDTO>> listar() {
         return ResponseEntity.ok(ventaService.listarVentas());
     }
+
+    
 }

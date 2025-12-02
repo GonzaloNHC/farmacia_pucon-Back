@@ -11,6 +11,8 @@ public class CrearLoteRequest {
     private BigDecimal precioUnitario;
     private Integer stockInicial;
     private Integer stockMinimo;
+    private BigDecimal costo;
+    private LocalDate fechaIngreso;
 
     public Long getMedicamentoId() {
         return medicamentoId;
@@ -35,4 +37,10 @@ public class CrearLoteRequest {
     public Integer getStockMinimo() {
         return stockMinimo;
     }
+    
+    public BigDecimal getCosto() { return costo; }
+    public void setCosto(BigDecimal costo) { this.costo = costo; }
+
+    public LocalDate getFechaIngreso() { return fechaIngreso; }
+    public void setFechaIngreso(LocalDate fechaIngreso) { this.fechaIngreso = fechaIngreso; }
 }

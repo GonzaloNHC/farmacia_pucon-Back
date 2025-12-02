@@ -8,6 +8,7 @@ import Farmacia_Pucon.demo.inventario.service.MedicamentoService;
 import org.springframework.stereotype.Service;
 import Farmacia_Pucon.demo.common.domain.CodigoBarras;
 import Farmacia_Pucon.demo.common.service.CodigoBarrasService;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,48 +18,43 @@ public class MedicamentoServiceImpl implements MedicamentoService {
     private final MedicamentoRepository medicamentoRepository;
     private final CodigoBarrasService codigoBarrasService;
 
-    public MedicamentoServiceImpl(MedicamentoRepository medicamentoRepository,
-            CodigoBarrasService codigoBarrasService) {
+    public MedicamentoServiceImpl(
+            MedicamentoRepository medicamentoRepository,
+            CodigoBarrasService codigoBarrasService
+    ) {
         this.medicamentoRepository = medicamentoRepository;
         this.codigoBarrasService = codigoBarrasService;
     }
 
     @Override
-    public MedicamentoResponseDTO crear(MedicamentoRequestDTO request) {
-         if (medicamentoRepository.existsByNombreComercialIgnoreCase(request.getNombreComercial())) {
-            throw new IllegalArgumentException("Ya existe un medicamento con ese nombre comercial");
-        }
-        Medicamento entity = new Medicamento();
-        entity.setNombreComercial(request.getNombreComercial());
-        entity.setNombreGenerico(request.getNombreGenerico());
-        entity.setPresentacion(request.getPresentacion());
-        entity.setDosificacion(request.getDosificacion());
+public MedicamentoResponseDTO crear(MedicamentoRequestDTO request) {
 
-        // Activo por defecto si viene null
-        if (request.getActivo() != null) {
-            entity.setActivo(request.getActivo());
-        } else {
-            entity.setActivo(true);
-        }
-
-        entity.setIndicaciones(request.getIndicaciones());
-        entity.setContraindicaciones(request.getContraindicaciones());
-        entity.setAdvertencias(request.getAdvertencias());
-        entity.setInteracciones(request.getInteracciones());
-
-        //Normativa
-        entity.setRequiereReceta(request.getRequiereReceta());
-        entity.setTipoReceta(request.getTipoReceta());
-        entity.setControlado(request.getControlado());
-
-        // ⚠️ IMPORTANTE: aquí NO usamos request.getCodigoBarras()
-        // Generamos el código de barras encriptado a partir de los datos del medicamento
-        CodigoBarras codigo = codigoBarrasService.generarParaMedicamento(entity);
-        entity.setCodigoBarras(codigo);
-
-        Medicamento guardado = medicamentoRepository.save(entity);
-        return toResponse(guardado);
+    if (medicamentoRepository.existsByNombreComercialIgnoreCase(request.getNombreComercial())) {
+        throw new IllegalArgumentException("Ya existe un medicamento con ese nombre comercial");
     }
+
+    Medicamento entity = new Medicamento();
+    entity.setNombreComercial(request.getNombreComercial());
+    entity.setNombreGenerico(request.getNombreGenerico());
+
+    
+    entity.setPresentacion(request.getPresentacion());
+    entity.setDosificacion(request.getDosificacion());
+
+    entity.setCategoria(request.getCategoria());
+    entity.setTipoVenta(request.getTipoVenta());
+    entity.setLaboratorio(request.getLaboratorio());
+    entity.setFormaFarmaceutica(request.getFormaFarmaceutica());
+
+    entity.setActivo(request.getActivo() != null ? request.getActivo() : true);
+
+    // Código de barras generado automáticamente
+    CodigoBarras codigo = codigoBarrasService.generarParaMedicamento(entity);
+    entity.setCodigoBarras(codigo);
+
+    Medicamento guardado = medicamentoRepository.save(entity);
+    return toResponse(guardado);
+}
 
     @Override
     public MedicamentoResponseDTO actualizar(Long id, MedicamentoRequestDTO request) {
@@ -67,29 +63,18 @@ public class MedicamentoServiceImpl implements MedicamentoService {
 
         entity.setNombreComercial(request.getNombreComercial());
         entity.setNombreGenerico(request.getNombreGenerico());
-        entity.setPresentacion(request.getPresentacion());
-        entity.setDosificacion(request.getDosificacion());
-
-        entity.setIndicaciones(request.getIndicaciones());
-        entity.setContraindicaciones(request.getContraindicaciones());
-        entity.setAdvertencias(request.getAdvertencias());
-        entity.setInteracciones(request.getInteracciones());
-
-        // 🔹 Normativa
-        entity.setRequiereReceta(request.getRequiereReceta());
-        entity.setTipoReceta(request.getTipoReceta());
-        entity.setControlado(request.getControlado());
-
-        CodigoBarras codigo = codigoBarrasService.generarParaMedicamento(entity);
-        entity.setCodigoBarras(codigo);
+        entity.setCategoria(request.getCategoria());
+        entity.setTipoVenta(request.getTipoVenta());
+        entity.setLaboratorio(request.getLaboratorio());
+        entity.setFormaFarmaceutica(request.getFormaFarmaceutica());
 
         if (request.getActivo() != null) {
             entity.setActivo(request.getActivo());
         }
 
-        if (request.getCodigoBarras() != null && !request.getCodigoBarras().isBlank()) {
-            entity.setCodigoBarras(new CodigoBarras(request.getCodigoBarras()));
-        }
+        // Regenerar código de barras
+        CodigoBarras codigo = codigoBarrasService.generarParaMedicamento(entity);
+        entity.setCodigoBarras(codigo);
 
         Medicamento actualizado = medicamentoRepository.save(entity);
         return toResponse(actualizado);
@@ -112,25 +97,16 @@ public class MedicamentoServiceImpl implements MedicamentoService {
 
     @Override
     public void eliminar(Long id) {
-        if (!medicamentoRepository.existsById(id)) {
-            throw new IllegalArgumentException("Medicamento no encontrado");
-        }
-        medicamentoRepository.deleteById(id);
+        Medicamento entity = medicamentoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Medicamento no encontrado"));
+
+        entity.setActivo(false); // soft-delete
+        medicamentoRepository.save(entity);
     }
 
     @Override
     public List<MedicamentoResponseDTO> buscarPorTexto(String texto) {
-        List<Medicamento> porNombreComercial = medicamentoRepository
-                .findByNombreComercialContainingIgnoreCase(texto);
-        List<Medicamento> porNombreGenerico = medicamentoRepository
-                .findByNombreGenericoContainingIgnoreCase(texto);
-
-        // unimos sin duplicar
-        return porNombreComercial.stream()
-                .distinct()
-                .collect(Collectors.toList())
-                .stream()
-                .collect(Collectors.toList())
+        return medicamentoRepository.buscarActivosPorNombre(texto)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
@@ -138,39 +114,62 @@ public class MedicamentoServiceImpl implements MedicamentoService {
 
     @Override
     public MedicamentoResponseDTO buscarPorCodigoBarras(String codigoBarras) {
-        Medicamento entity = medicamentoRepository
-                .findByCodigoBarras_Valor(codigoBarras)
+        Medicamento entity = medicamentoRepository.findByCodigoBarras_Valor(codigoBarras)
                 .orElseThrow(() -> new RuntimeException("No se encontró medicamento con ese código de barras"));
         return toResponse(entity);
     }
 
     @Override
     public String decodificarCodigoBarras(String codigoBarras) {
-        // Esto te devuelve el texto original (nombreComercial|nombreGenerico|presentacion|dosificacion)
         return codigoBarrasService.desencriptar(codigoBarras);
     }
 
+    @Override
+    public List<MedicamentoResponseDTO> buscarPorCategoria(String categoria) {
+        return medicamentoRepository.findByCategoriaIgnoreCase(categoria)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MedicamentoResponseDTO> buscarPorTipoVenta(String tipoVenta) {
+        return medicamentoRepository.findByTipoVentaIgnoreCase(tipoVenta)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MedicamentoResponseDTO> buscarPorLaboratorio(String laboratorio) {
+        return medicamentoRepository.findByLaboratorioIgnoreCase(laboratorio)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
     private MedicamentoResponseDTO toResponse(Medicamento entity) {
-        String codigo = entity.getCodigoBarras() != null
-                ? entity.getCodigoBarras().getValor()
-                : null;
+        String codigo = entity.getCodigoBarras() != null ? entity.getCodigoBarras().getValor() : null;
 
         return new MedicamentoResponseDTO(
-                entity.getId(),
-                entity.getNombreComercial(),
-                entity.getNombreGenerico(),
-                entity.getPresentacion(),
-                entity.getDosificacion(),
-                entity.getActivo(),
-                codigo,
-                entity.getIndicaciones(),
-                entity.getContraindicaciones(),
-                entity.getAdvertencias(),
-                entity.getInteracciones(),
-                entity.getRequiereReceta(),
-                entity.getTipoReceta(),
-                entity.getControlado()
-
-        );
-    }
+            entity.getId(),
+            entity.getNombreComercial(),
+            entity.getNombreGenerico(),
+            entity.getPresentacion(),
+            entity.getDosificacion(),
+            entity.getCategoria(),
+            entity.getTipoVenta(),
+            entity.getLaboratorio(),
+            entity.getFormaFarmaceutica(),
+            entity.getActivo(),
+            codigo
+    );
+}
+    @Override
+    public List<MedicamentoResponseDTO> buscarPorFormaFarmaceutica(String formaFarmaceutica) {
+    return medicamentoRepository.findByFormaFarmaceuticaIgnoreCase(formaFarmaceutica)
+            .stream()
+            .map(this::toResponse)
+            .collect(Collectors.toList());
+}
 }

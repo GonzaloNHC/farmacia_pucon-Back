@@ -6,6 +6,7 @@ import Farmacia_Pucon.demo.authentication.usuarios.domain.User;
 import Farmacia_Pucon.demo.authentication.usuarios.repository.UserRepository;
 import Farmacia_Pucon.demo.inventario.domain.Lote;
 import Farmacia_Pucon.demo.inventario.repository.LoteRepository;
+import Farmacia_Pucon.demo.inventario.stock.dto.LoteVentaDTO;
 import Farmacia_Pucon.demo.ventas.domain.DetalleVenta;
 import Farmacia_Pucon.demo.ventas.domain.Pago;
 import Farmacia_Pucon.demo.ventas.domain.Venta;
@@ -324,4 +325,27 @@ public class VentaServiceImpl implements VentaService {
         dto.setFechaHora(pago.getFechaHora());
         return dto;
     }
+
+@Override
+@Transactional(readOnly = true)
+public List<LoteVentaDTO> obtenerLotesPorVenta(Long ventaId) {
+
+    Venta venta = ventaRepository.findById(ventaId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Venta no encontrada"));
+
+    return venta.getDetalles().stream().map(det -> {
+        Lote lote = det.getLote();
+
+        LoteVentaDTO dto = new LoteVentaDTO();
+        dto.setLoteId(lote.getId());
+        dto.setCodigoLote(lote.getCodigoLote());
+        dto.setMedicamento(lote.getMedicamento().getNombreComercial());
+        dto.setCantidadVendida(det.getCantidad());
+        dto.setFechaVencimiento(lote.getFechaVencimiento());
+        dto.setStockRestante(lote.getCantidadDisponible());
+
+        return dto;
+    }).collect(Collectors.toList());
+}
+
 }
