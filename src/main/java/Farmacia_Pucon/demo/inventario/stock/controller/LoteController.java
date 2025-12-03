@@ -1,7 +1,6 @@
 package Farmacia_Pucon.demo.inventario.stock.controller;
 
 import Farmacia_Pucon.demo.inventario.stock.dto.*;
-import Farmacia_Pucon.demo.inventario.stock.dto.DevolucionStockRequest;
 import Farmacia_Pucon.demo.inventario.stock.service.LoteService;
 
 import org.springframework.http.ResponseEntity;
@@ -33,9 +32,9 @@ public class LoteController {
     }
     @PostMapping("/devoluciones/venta")
     public ResponseEntity<LoteResponseDTO> devolverPorVenta(
-        @RequestBody DevolucionVentaRequest request
+            @RequestBody DevolucionVentaRequest request
     ) {
-    return ResponseEntity.ok(loteService.devolverStockPorVenta(request));
+        return ResponseEntity.ok(loteService.devolverStockPorVenta(request));
     }
 
     @GetMapping
@@ -64,7 +63,7 @@ public class LoteController {
     @PutMapping("/{id}/devolucion")
     public ResponseEntity<LoteResponseDTO> devolverStock(
             @PathVariable Long id,
-            @RequestBody DevolucionStockRequest request
+            @RequestBody ActualizarStockRequest.DevolucionStockRequest request
     ) {
         return ResponseEntity.ok(loteService.devolverStock(id, request));
     }

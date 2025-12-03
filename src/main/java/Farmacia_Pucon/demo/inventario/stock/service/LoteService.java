@@ -1,7 +1,7 @@
 package Farmacia_Pucon.demo.inventario.stock.service;
 
+import Farmacia_Pucon.demo.inventario.domain.Lote;
 import Farmacia_Pucon.demo.inventario.stock.dto.*;
-import Farmacia_Pucon.demo.inventario.dto.DevolucionStockRequest;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ public interface LoteService {
 
     LoteResponseDTO actualizarStock(Long id, ActualizarStockRequest request);
 
-    LoteResponseDTO devolverStock(Long loteId, DevolucionStockRequest request);
+    LoteResponseDTO devolverStock(Long loteId, ActualizarStockRequest.DevolucionStockRequest request);
 
     LoteResponseDTO registrarMovimiento(RegistrarMovimientoRequest request);
 
@@ -25,4 +25,5 @@ public interface LoteService {
 
     LoteResponseDTO devolverStockPorVenta(DevolucionVentaRequest request);
 
+    void registrarIngresoDeLote(Lote lote, String s);
 }

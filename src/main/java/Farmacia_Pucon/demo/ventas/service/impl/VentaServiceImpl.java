@@ -7,6 +7,8 @@ import Farmacia_Pucon.demo.authentication.usuarios.repository.UserRepository;
 import Farmacia_Pucon.demo.inventario.domain.Lote;
 import Farmacia_Pucon.demo.inventario.repository.LoteRepository;
 import Farmacia_Pucon.demo.inventario.stock.dto.LoteVentaDTO;
+import Farmacia_Pucon.demo.inventario.stock.dto.RegistrarMovimientoRequest;
+import Farmacia_Pucon.demo.inventario.stock.service.LoteService;
 import Farmacia_Pucon.demo.ventas.domain.DetalleVenta;
 import Farmacia_Pucon.demo.ventas.domain.Pago;
 import Farmacia_Pucon.demo.ventas.domain.Venta;
@@ -34,19 +36,22 @@ public class VentaServiceImpl implements VentaService {
     private final LoteRepository loteRepository;
     private final PacienteRepository pacienteRepository;
     private final UserRepository userRepository;
+    private final LoteService loteService;
 
     public VentaServiceImpl(VentaRepository ventaRepository,
                             DetalleVentaRepository detalleVentaRepository,
                             PagoRepository pagoRepository,
                             LoteRepository loteRepository,
                             PacienteRepository pacienteRepository,
-                            UserRepository userRepository) {
+                            UserRepository userRepository,
+                            LoteService loteService) {
         this.ventaRepository = ventaRepository;
         this.detalleVentaRepository = detalleVentaRepository;
         this.pagoRepository = pagoRepository;
         this.loteRepository = loteRepository;
         this.pacienteRepository = pacienteRepository;
         this.userRepository = userRepository;
+        this.loteService = loteService;
     }
 
     // ================== Registrar Venta ==================
@@ -156,6 +161,13 @@ public class VentaServiceImpl implements VentaService {
             int nuevoStock = lote.getCantidadDisponible() - itemReq.getCantidad();
             lote.setCantidadDisponible(nuevoStock);
             loteRepository.save(lote);
+
+            loteService.registrarMovimiento(new RegistrarMovimientoRequest(
+                    lote.getId(),
+                    itemReq.getCantidad(),
+                    "SALIDA",
+                    "Venta #" + venta.getId() + " – Lote " + lote.getCodigoLote()
+            ));
 
             // Crear detalle
             DetalleVenta detalle = new DetalleVenta();

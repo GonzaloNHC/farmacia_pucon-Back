@@ -7,6 +7,13 @@ public class RegistrarMovimientoRequest {
     private String tipo;           // "DEVOLUCION", "AJUSTE", "VENTA"
     private String referencia;     // texto libre
 
+    public RegistrarMovimientoRequest(Long loteId, Integer cantidad, String tipo, String referencia) {
+        this.loteId = loteId;
+        this.cantidad = cantidad;
+        this.tipo = tipo;
+        this.referencia = referencia;
+    }
+
     public Long getLoteId() {
         return loteId;
     }

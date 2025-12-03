@@ -13,6 +13,7 @@ import Farmacia_Pucon.demo.inventario.ingreso.repository.IngresoRepository;
 import Farmacia_Pucon.demo.inventario.ingreso.service.IngresoService;
 import Farmacia_Pucon.demo.inventario.repository.LoteRepository;
 import Farmacia_Pucon.demo.inventario.repository.MedicamentoRepository;
+import Farmacia_Pucon.demo.inventario.stock.service.LoteService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,15 +29,19 @@ public class IngresoServiceImpl implements IngresoService {
     private final DetalleIngresoRepository detalleIngresoRepository;
     private final MedicamentoRepository medicamentoRepository;
     private final LoteRepository loteRepository;
+    private final LoteService loteService;
+
 
     public IngresoServiceImpl(IngresoRepository ingresoRepository,
                               DetalleIngresoRepository detalleIngresoRepository,
                               MedicamentoRepository medicamentoRepository,
-                              LoteRepository loteRepository) {
+                              LoteRepository loteRepository,
+                              LoteService loteService) {
         this.ingresoRepository = ingresoRepository;
         this.detalleIngresoRepository = detalleIngresoRepository;
         this.medicamentoRepository = medicamentoRepository;
         this.loteRepository = loteRepository;
+        this.loteService = loteService;
     }
 
     // ================== CREAR ==================
@@ -76,7 +81,7 @@ public class IngresoServiceImpl implements IngresoService {
                     .orElseThrow(() -> new RuntimeException(
                             "Medicamento no encontrado para id: " + detReq.getMedicamentoId()));
 
-            // Crear el Lote asociado
+            //Crear el Lote asociado
             Lote lote = new Lote();
             lote.setMedicamento(medicamento);
             lote.setCodigoLote(detReq.getCodigoLote());
@@ -96,6 +101,11 @@ public class IngresoServiceImpl implements IngresoService {
             lote.setPrecioTotalLote(precioTotal);
 
             lote = loteRepository.save(lote);
+
+            loteService.registrarIngresoDeLote(
+                    lote,
+                    "Ingreso #" + ingreso.getId() + " – Lote " + lote.getCodigoLote()
+            );
 
             // Crear el DetalleIngreso
             DetalleIngreso detalle = new DetalleIngreso();

@@ -5,8 +5,6 @@ import Farmacia_Pucon.demo.inventario.dto.MedicamentoResponseDTO;
 
 import java.util.List;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 public interface MedicamentoService {
 
     MedicamentoResponseDTO crear(MedicamentoRequestDTO request);

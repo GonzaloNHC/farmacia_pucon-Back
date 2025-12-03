@@ -8,7 +8,6 @@ import Farmacia_Pucon.demo.inventario.domain.Lote;
 import Farmacia_Pucon.demo.inventario.domain.MovimientoInventario;
 import Farmacia_Pucon.demo.inventario.repository.MovimientoInventarioRepository;
 import Farmacia_Pucon.demo.inventario.stock.dto.*;
-import Farmacia_Pucon.demo.inventario.dto.DevolucionStockRequest;
 import Farmacia_Pucon.demo.inventario.stock.service.LoteService;
 import Farmacia_Pucon.demo.ventas.domain.DetalleVenta;
 import Farmacia_Pucon.demo.ventas.domain.Venta;
@@ -146,7 +145,7 @@ public class LoteServiceImpl implements LoteService {
     }
 
     @Override
-    public LoteResponseDTO devolverStock(Long loteId, DevolucionStockRequest request) {
+    public LoteResponseDTO devolverStock(Long loteId, ActualizarStockRequest.DevolucionStockRequest request) {
 
         if (request.getCantidad() == null || request.getCantidad() <= 0) {
             throw new RuntimeException("La cantidad a devolver debe ser mayor a cero");
@@ -214,7 +213,16 @@ public class LoteServiceImpl implements LoteService {
 
         return toResponse(lote);
     }
-    
+
+    public void registrarIngresoDeLote(Lote lote, String referencia) {
+        MovimientoInventario m = new MovimientoInventario();
+        m.setLote(lote);
+        m.setFechaHora(LocalDateTime.now());
+        m.setCantidad(lote.getCantidadDisponible()); // o lote.getStockInicial()
+        m.setTipo("INGRESO");                        // aquí usas setTipo, no setTipoMovimiento
+        m.setReferencia(referencia);
+        movimientoInventarioRepository.save(m);
+    }
 
 
     private LoteResponseDTO toResponse(Lote lote) {

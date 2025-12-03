@@ -17,7 +17,7 @@ public class LoteResponseDTO {
     private Integer cantidadDisponible;
     private Boolean activo;
 
-    // 🔥 NUEVOS CAMPOS HU17
+    //  NUEVOS CAMPOS HU17
     private BigDecimal costo;
     private LocalDate fechaIngreso;
 
@@ -48,7 +48,7 @@ public class LoteResponseDTO {
         this.activo = activo;
     }
 
-    // 🔥 NUEVO CONSTRUCTOR EXTENDIDO PARA HU17
+    //  NUEVO CONSTRUCTOR EXTENDIDO PARA HU17
     public LoteResponseDTO(
             Long id,
             Long medicamentoId,
