@@ -12,12 +12,11 @@ public class VentaResponseDTO {
     private String nombrePaciente;  // paciente
     private BigDecimal total;
     private String estado;
-
+    private BigDecimal vueltoEfectivo;
     private List<DetalleVentaDTO> detalles;
     private List<PagoDTO> pagos;
 
     // ===== GETTERS y SETTERS =====
-
     public Long getId() {
         return id;
     }
@@ -80,5 +79,13 @@ public class VentaResponseDTO {
 
     public void setPagos(List<PagoDTO> pagos) {
         this.pagos = pagos;
+    }
+    
+     public BigDecimal getVueltoEfectivo() {
+        return vueltoEfectivo;
+    }
+
+    public void setVueltoEfectivo(BigDecimal vueltoEfectivo) {
+        this.vueltoEfectivo = vueltoEfectivo;
     }
 }
