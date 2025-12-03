@@ -15,6 +15,9 @@ public class Paciente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "cronico", nullable = false)
+    private boolean cronico = false;
+
     // RUT único
     @Column(nullable = false, unique = true, length = 20)
     private String rut;
@@ -32,8 +35,8 @@ public class Paciente {
     private String email;
 
     // ===== CONSTRUCTORES =====
-
-    public Paciente() {}
+    public Paciente() {
+    }
 
     public Paciente(String rut, String nombreCompleto, String telefono, String direccion, String email) {
         this.rut = rut;
@@ -44,7 +47,6 @@ public class Paciente {
     }
 
     // ===== GETTERS / SETTERS =====
-
     public Long getId() {
         return id;
     }
@@ -87,5 +89,13 @@ public class Paciente {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public boolean isCronico() {
+        return cronico;
+    }
+
+    public void setCronico(boolean cronico) {
+        this.cronico = cronico;
     }
 }

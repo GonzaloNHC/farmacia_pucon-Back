@@ -26,12 +26,12 @@ public class ComprobantePacienteDTO {
     // Detalle de la venta (reutilizamos tus DTOs actuales)
     private List<DetalleVentaDTO> detalles;
     private List<PagoDTO> pagos;
+    private BigDecimal vueltoEfectivo;
 
     public ComprobantePacienteDTO() {
     }
 
     // GETTERS y SETTERS
-
     public Long getIdVenta() {
         return idVenta;
     }
@@ -134,5 +134,13 @@ public class ComprobantePacienteDTO {
 
     public void setPagos(List<PagoDTO> pagos) {
         this.pagos = pagos;
+    }
+
+    public BigDecimal getVueltoEfectivo() {
+        return vueltoEfectivo;
+    }
+
+    public void setVueltoEfectivo(BigDecimal vueltoEfectivo) {
+        this.vueltoEfectivo = vueltoEfectivo;
     }
 }

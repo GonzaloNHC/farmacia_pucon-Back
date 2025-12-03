@@ -7,6 +7,7 @@ public class PacienteRequestDTO {
     private String telefono;
     private String direccion;
     private String email;
+    private Boolean cronico;
 
     public PacienteRequestDTO() {}
 
@@ -49,4 +50,13 @@ public class PacienteRequestDTO {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    public Boolean getCronico() {
+        return cronico;
+    }
+
+    public void setCronico(Boolean cronico) {
+        this.cronico = cronico;
+    }
+    
 }

@@ -40,8 +40,10 @@ public class Venta {
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL)
     private List<Pago> pagos = new ArrayList<>();
 
-    // ===== Getters y setters =====
+    @Column(name = "vuelto_efectivo")
+    private BigDecimal vueltoEfectivo;
 
+    // ===== Getters y setters =====
     public Long getId() {
         return id;
     }
@@ -106,8 +108,15 @@ public class Venta {
         this.pagos = pagos;
     }
 
-    // ===== Métodos de conveniencia =====
+    public BigDecimal getVueltoEfectivo() {
+        return vueltoEfectivo;
+    }
 
+    public void setVueltoEfectivo(BigDecimal vueltoEfectivo) {
+        this.vueltoEfectivo = vueltoEfectivo;
+    }
+
+    // ===== Métodos de conveniencia =====
     public void agregarDetalle(DetalleVenta detalle) {
         detalle.setVenta(this);
         this.detalles.add(detalle);
