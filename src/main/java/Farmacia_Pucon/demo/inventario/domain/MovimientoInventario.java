@@ -20,26 +20,15 @@ public class MovimientoInventario {
     @Column(name = "fecha_hora", nullable = false)
     private LocalDateTime fechaHora;
 
-    /**
-     * Cantidad del movimiento.
-     * - Positivo -> entra stock (DEVOLUCION, AJUSTE POSITIVO)
-     * - Negativo -> sale stock (VENTA, AJUSTE NEGATIVO)
-     */
     @Column(nullable = false)
     private Integer cantidad;
 
-    /**
-     * Tipo de movimiento, por ejemplo:
-     * "VENTA", "DEVOLUCION", "AJUSTE"
-     */
+
     @Column(nullable = false)
     private String tipo;
-
-    /**
-     * Campo libre para trazabilidad:
-     * Ej: "Devolución de venta 15", "Ajuste inventario", etc.
-     */
     private String referencia;
+
+    private String usuario;
 
     // ===== Getters y Setters =====
 
@@ -85,5 +74,13 @@ public class MovimientoInventario {
 
     public void setReferencia(String referencia) {
         this.referencia = referencia;
+    }
+
+    public String getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(String usuario) {
+        this.usuario = usuario;
     }
 }
