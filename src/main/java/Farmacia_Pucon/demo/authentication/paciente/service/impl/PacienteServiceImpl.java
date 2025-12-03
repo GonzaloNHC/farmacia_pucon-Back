@@ -29,6 +29,7 @@ public class PacienteServiceImpl implements PacienteService {
             throw new IllegalArgumentException("Ya existe un paciente con ese RUT");
         }
 
+        // Construcción del paciente con soporte para "crónico"
         Paciente paciente = new Paciente(
                 request.getRut(),
                 request.getNombreCompleto(),
@@ -37,8 +38,10 @@ public class PacienteServiceImpl implements PacienteService {
                 request.getEmail()
         );
 
-        Paciente guardado = pacienteRepository.save(paciente);
+        // Nuevo campo: asignar crónico (default = false)
+        paciente.setCronico(request.getCronico() != null ? request.getCronico() : false);
 
+        Paciente guardado = pacienteRepository.save(paciente);
         return mapToResponse(guardado);
     }
 
@@ -81,6 +84,11 @@ public class PacienteServiceImpl implements PacienteService {
         paciente.setDireccion(request.getDireccion());
         paciente.setEmail(request.getEmail());
 
+        // Actualizar campo nuevo: crónico
+        if (request.getCronico() != null) {
+            paciente.setCronico(request.getCronico());
+        }
+
         Paciente actualizado = pacienteRepository.save(paciente);
         return mapToResponse(actualizado);
     }
@@ -102,7 +110,8 @@ public class PacienteServiceImpl implements PacienteService {
                 paciente.getNombreCompleto(),
                 paciente.getTelefono(),
                 paciente.getDireccion(),
-                paciente.getEmail()
+                paciente.getEmail(),
+                paciente.isCronico() 
         );
     }
 }
