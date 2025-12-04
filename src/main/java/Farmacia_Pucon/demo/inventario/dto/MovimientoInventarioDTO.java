@@ -12,6 +12,8 @@ public class MovimientoInventarioDTO {
 
     private Long loteId;
     private Long medicamentoId;
+    //private Long usuarioId;
+    //private String usuarioNombre;
 
     public MovimientoInventarioDTO() {
     }
@@ -89,4 +91,20 @@ public class MovimientoInventarioDTO {
     public void setId(Long id) {
         this.id = id;
     }
+
+    /*public Long getUsuarioId() {
+        return usuarioId;
+    }
+
+    public void setUsuarioId(Long usuarioId) {
+        this.usuarioId = usuarioId;
+    }
+
+    public String getUsuarioNombre() {
+        return usuarioNombre;
+    }
+
+    public void setUsuarioNombre(String usuarioNombre) {
+        this.usuarioNombre = usuarioNombre;
+    }*/
 }

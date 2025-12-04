@@ -20,16 +20,22 @@ public class MovimientoInventarioController {
     }
 
     // ------- Helper para mapear a DTO --------
-    private MovimientoInventarioDTO toDTO(MovimientoInventario m) {
+    private MovimientoInventarioDTO mapToDTO(MovimientoInventario m) {
 
         Long loteId = null;
         Long medicamentoId = null;
 
         if (m.getLote() != null) {
             loteId = m.getLote().getId();
-            if (m.getLote().getMedicamento() != null) {
-                medicamentoId = m.getLote().getMedicamento().getId();
-            }
+        }
+
+        // Si MovimientoInventario tiene campo "medicamento"
+        if (m.getMedicamento() != null) {
+            medicamentoId = m.getMedicamento().getId();
+        }
+        // (opcional) fallback por si en algún momento sólo viene por el lote
+        else if (m.getLote() != null && m.getLote().getMedicamento() != null) {
+            medicamentoId = m.getLote().getMedicamento().getId();
         }
 
         return new MovimientoInventarioDTO(
@@ -43,39 +49,39 @@ public class MovimientoInventarioController {
         );
     }
 
-    // Consultar movimientos por producto (medicamento)
+    // 🔹 Trazabilidad por producto (medicamento)
     @GetMapping("/producto/{id}")
     public List<MovimientoInventarioDTO> kardexPorProducto(@PathVariable Long id) {
-        return movimientoInventarioRepository.findByLote_Medicamento_Id(id)
+        return movimientoInventarioRepository.findByMedicamento_Id(id)
                 .stream()
-                .map(this::toDTO)
+                .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
-    // Consultar movimientos por tipo (ENTRADA, SALIDA, DEVOLUCION, etc.)
+    // 🔹 Trazabilidad por tipo (INGRESO, SALIDA, DEVOLUCION, etc.)
     @GetMapping("/tipo/{tipo}")
     public List<MovimientoInventarioDTO> kardexPorTipo(@PathVariable String tipo) {
         return movimientoInventarioRepository.findByTipo(tipo)
                 .stream()
-                .map(this::toDTO)
+                .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
-    // Consultar movimientos por lote
+    // 🔹 Trazabilidad por lote
     @GetMapping("/lote/{id}")
     public List<MovimientoInventarioDTO> kardexPorLote(@PathVariable Long id) {
         return movimientoInventarioRepository.findByLoteId(id)
                 .stream()
-                .map(this::toDTO)
+                .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
-    // Obtener el kardex completo ordenado por fecha descendente
+    // 🔹 Kardex completo ordenado por fecha desc
     @GetMapping("/ordenado")
     public List<MovimientoInventarioDTO> obtenerKardexOrdenado() {
         return movimientoInventarioRepository.findAllByOrderByFechaHoraDesc()
                 .stream()
-                .map(this::toDTO)
+                .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 }
