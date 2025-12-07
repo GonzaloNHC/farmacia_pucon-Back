@@ -19,11 +19,16 @@ public interface LoteService {
 
     LoteResponseDTO devolverStock(Long loteId, ActualizarStockRequest.DevolucionStockRequest request);
 
+    //Salidas manuales o especiales (correcciones, devoluciones, fraccionamientos)
     LoteResponseDTO registrarMovimiento(RegistrarMovimientoRequest request);
+
+    //Venta de productos, descargas automáticas por venta
+    void registrarSalidaPorVenta(LoteVentaDTO dto, Long ventaId, Long usuarioId);
 
     void desactivar(Long id);
 
     LoteResponseDTO devolverStockPorVenta(DevolucionVentaRequest request);
 
+    //Ingreso inicial, recepciones de orden, creación de lote
     void registrarIngresoDeLote(Lote lote, String s);
 }

@@ -83,6 +83,8 @@ public class LoteServiceImpl implements LoteService {
         lote.setPrecioTotalLote(precioTotal);
 
         Lote guardado = loteRepository.save(lote);
+        registrarIngresoDeLote(guardado, "INGRESO INICIAL - CREACION DE LOTE");
+
         return toResponse(guardado);
     }
 
@@ -244,6 +246,54 @@ public class LoteServiceImpl implements LoteService {
         m.setTipo("INGRESO");
         m.setReferencia(referencia);                        // Ej: "Ingreso N°X"
         movimientoInventarioRepository.save(m);
+    }
+
+    @Override
+    public void registrarSalidaPorVenta(LoteVentaDTO dto, Long ventaId, Long usuarioId) {
+
+        if (dto == null) {
+            throw new RuntimeException("El DTO de venta no puede ser null");
+        }
+        if (dto.getLoteId() == null) {
+            throw new RuntimeException("Debe indicar loteId");
+        }
+        if (dto.getCantidadVendida() == null || dto.getCantidadVendida() <= 0) {
+            throw new RuntimeException("La cantidadVendida debe ser mayor a cero");
+        }
+
+        Lote lote = loteRepository.findById(dto.getLoteId())
+                .orElseThrow(() -> new RuntimeException("Lote no encontrado"));
+
+        int stockActual = lote.getCantidadDisponible();
+        int cantidadVendida = dto.getCantidadVendida();
+
+        if (stockActual < cantidadVendida) {
+            throw new RuntimeException("Stock insuficiente en el lote para la venta");
+        }
+
+        int nuevoStock = stockActual - cantidadVendida;
+        lote.setCantidadDisponible(nuevoStock);
+        loteRepository.save(lote);
+
+        // buscar usuario (opcional, pero recomendado para HU27)
+        User usuario = null;
+        if (usuarioId != null) {
+            usuario = userRepository.findById(usuarioId)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        }
+
+        MovimientoInventario mov = new MovimientoInventario();
+        mov.setLote(lote);
+        mov.setMedicamento(lote.getMedicamento());
+        mov.setFechaHora(LocalDateTime.now());
+        mov.setCantidad(cantidadVendida);
+        mov.setTipo("VENTA");
+        mov.setReferencia(ventaId != null
+                ? "VENTA #" + ventaId + " - Lote " + lote.getCodigoLote()
+                : "VENTA");
+        mov.setUsuario(usuario);
+
+        movimientoInventarioRepository.save(mov);
     }
 
     // ================== Devolución por venta ==================

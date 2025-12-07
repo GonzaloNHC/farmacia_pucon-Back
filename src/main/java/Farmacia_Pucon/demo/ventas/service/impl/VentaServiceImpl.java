@@ -5,10 +5,9 @@ import Farmacia_Pucon.demo.authentication.paciente.repository.PacienteRepository
 import Farmacia_Pucon.demo.authentication.usuarios.domain.User;
 import Farmacia_Pucon.demo.authentication.usuarios.repository.UserRepository;
 import Farmacia_Pucon.demo.inventario.domain.Lote;
-import Farmacia_Pucon.demo.inventario.domain.MovimientoInventario;
 import Farmacia_Pucon.demo.inventario.repository.LoteRepository;
-import Farmacia_Pucon.demo.inventario.repository.MovimientoInventarioRepository;
 import Farmacia_Pucon.demo.inventario.stock.dto.LoteVentaDTO;
+import Farmacia_Pucon.demo.inventario.stock.service.LoteService;
 import Farmacia_Pucon.demo.ventas.domain.DetalleVenta;
 import Farmacia_Pucon.demo.ventas.domain.Pago;
 import Farmacia_Pucon.demo.ventas.domain.Venta;
@@ -36,7 +35,7 @@ public class VentaServiceImpl implements VentaService {
     private final LoteRepository loteRepository;
     private final PacienteRepository pacienteRepository;
     private final UserRepository userRepository;
-    private final MovimientoInventarioRepository movimientoInventarioRepository;
+    private final LoteService loteService;
 
     public VentaServiceImpl(VentaRepository ventaRepository,
                             DetalleVentaRepository detalleVentaRepository,
@@ -44,14 +43,14 @@ public class VentaServiceImpl implements VentaService {
                             LoteRepository loteRepository,
                             PacienteRepository pacienteRepository,
                             UserRepository userRepository,
-                            MovimientoInventarioRepository movimientoInventarioRepository) {
+                            LoteService loteService) {
         this.ventaRepository = ventaRepository;
         this.detalleVentaRepository = detalleVentaRepository;
         this.pagoRepository = pagoRepository;
         this.loteRepository = loteRepository;
         this.pacienteRepository = pacienteRepository;
         this.userRepository = userRepository;
-        this.movimientoInventarioRepository = movimientoInventarioRepository;
+        this.loteService = loteService;
     }
 
     // ================== Registrar Venta ==================
@@ -104,50 +103,49 @@ public class VentaServiceImpl implements VentaService {
                         "Paciente no encontrado para id: " + request.getPacienteId()
                 ));
 
-        // ---- Calcular total de la venta a partir de los ítems ----
-
-        BigDecimal total = request.getItems().stream()
-                .map(item -> {
-                    if (item.getCantidad() == null || item.getCantidad() <= 0) {
-                        throw new ResponseStatusException(
-                                HttpStatus.BAD_REQUEST,
-                                "La cantidad debe ser mayor a cero"
-                        );
-                    }
-                    if (item.getPrecioUnitario() == null ||
-                            item.getPrecioUnitario().compareTo(BigDecimal.ZERO) <= 0) {
-                        throw new ResponseStatusException(
-                                HttpStatus.BAD_REQUEST,
-                                "El precioUnitario debe ser mayor a cero"
-                        );
-                    }
-                    return item.getPrecioUnitario()
-                            .multiply(BigDecimal.valueOf(item.getCantidad()));
-                })
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        // ---- Crear entidad Venta ----
+        // ---- Crear entidad Venta (sin total todavía) ----
 
         Venta venta = new Venta();
         venta.setFechaHora(LocalDateTime.now());
-        venta.setTotal(total);
         venta.setEstado("COMPLETADA");
         venta.setUsuario(usuario);
         venta.setPaciente(paciente);
+        venta.setTotal(BigDecimal.ZERO);
 
         venta = ventaRepository.save(venta);
+
+        // ---- Calcular total usando SIEMPRE el precio del lote ----
+
+        BigDecimal totalVenta = BigDecimal.ZERO;
 
         // ---- Crear DetalleVenta por cada ítem + validar/descontar stock ----
 
         for (ItemVentaRequest itemReq : request.getItems()) {
 
+            if (itemReq.getCantidad() == null || itemReq.getCantidad() <= 0) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "La cantidad debe ser mayor a cero"
+                );
+            }
+
+            // 1) Buscar lote (lo sigues usando para precio y detalle)
             Lote lote = loteRepository.findById(itemReq.getLoteId())
                     .orElseThrow(() -> new ResponseStatusException(
                             HttpStatus.NOT_FOUND,
                             "Lote no encontrado para id: " + itemReq.getLoteId()
                     ));
 
-            // Validar stock
+            // 2) TOMAMOS EL PRECIO DESDE EL LOTE
+            BigDecimal precioUnitario = lote.getPrecioUnitario();
+            if (precioUnitario == null || precioUnitario.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "El lote " + lote.getCodigoLote() + " no tiene un precioUnitario válido"
+                );
+            }
+
+            // (opcional) validar stock aquí, si quieres mantener la validación en ventas
             if (lote.getCantidadDisponible() < itemReq.getCantidad()) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
@@ -157,45 +155,39 @@ public class VentaServiceImpl implements VentaService {
                 );
             }
 
-            // Descontar stock del lote
-            int nuevoStock = lote.getCantidadDisponible() - itemReq.getCantidad();
-            lote.setCantidadDisponible(nuevoStock);
-            loteRepository.save(lote);
+            // 3) Delegar el descuento de stock + kardex al módulo de inventario (HU27)
+            LoteVentaDTO loteVentaDTO = new LoteVentaDTO();
+            loteVentaDTO.setLoteId(lote.getId());
+            loteVentaDTO.setCodigoLote(lote.getCodigoLote());
+            loteVentaDTO.setMedicamento(lote.getMedicamento().getNombreComercial());
+            loteVentaDTO.setCantidadVendida(itemReq.getCantidad());
+            loteVentaDTO.setFechaVencimiento(lote.getFechaVencimiento());
 
-            // Registrar movimiento de inventario (KARDEX) tipo SALIDA
-            MovimientoInventario mov = new MovimientoInventario();
-            mov.setLote(lote);
-            mov.setMedicamento(lote.getMedicamento());
-            mov.setFechaHora(LocalDateTime.now());
-            mov.setCantidad(itemReq.getCantidad());      // cantidad positiva
-            mov.setTipo("SALIDA");
-            mov.setReferencia(
-                    "VENTA #" + venta.getId() +
-                            " - Lote " + lote.getCodigoLote()
+            loteService.registrarSalidaPorVenta(
+                    loteVentaDTO,
+                    venta.getId(),          // referencia para HU27
+                    usuario.getId()         // usuario que realizó la venta
             );
 
-            // Aquí ya estás seteando el usuario
-            if (venta.getUsuario() != null) {
-                mov.setUsuario(venta.getUsuario());
-            }
-
-            movimientoInventarioRepository.save(mov);
-
-
-
-            // Crear detalle de venta
+            // 4) Crear detalle de venta (igual que antes)
             DetalleVenta detalle = new DetalleVenta();
             detalle.setVenta(venta);
             detalle.setLote(lote);
             detalle.setCantidad(itemReq.getCantidad());
-            detalle.setPrecioUnitario(itemReq.getPrecioUnitario());
+            detalle.setPrecioUnitario(precioUnitario);
 
-            BigDecimal subtotal = itemReq.getPrecioUnitario()
+            BigDecimal subtotal = precioUnitario
                     .multiply(BigDecimal.valueOf(itemReq.getCantidad()));
             detalle.setSubtotal(subtotal);
 
+            totalVenta = totalVenta.add(subtotal);
+
             detalleVentaRepository.save(detalle);
         }
+
+        // ---- Setear total calculado y guardar venta ----
+        venta.setTotal(totalVenta);
+        ventaRepository.save(venta);
 
         // ---- Registrar pagos ----
 
