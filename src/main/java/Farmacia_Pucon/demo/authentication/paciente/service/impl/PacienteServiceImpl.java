@@ -111,7 +111,7 @@ public class PacienteServiceImpl implements PacienteService {
                 paciente.getTelefono(),
                 paciente.getDireccion(),
                 paciente.getEmail(),
-                paciente.isCronico() 
+                paciente.isCronico()
         );
     }
 }
