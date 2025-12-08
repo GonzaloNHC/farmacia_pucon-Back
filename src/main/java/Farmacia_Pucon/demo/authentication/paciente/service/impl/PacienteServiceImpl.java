@@ -101,7 +101,7 @@ public class PacienteServiceImpl implements PacienteService {
         pacienteRepository.deleteById(id);
     }
 
-    // ===== MAPPER =====
+    // ===== MAPPER  =====
 
     private PacienteResponseDTO mapToResponse(Paciente paciente) {
         return new PacienteResponseDTO(
