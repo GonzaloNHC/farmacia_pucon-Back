@@ -7,7 +7,6 @@ import Farmacia_Pucon.demo.authentication.usuarios.repository.UserRepository;
 import Farmacia_Pucon.demo.inventario.domain.Lote;
 import Farmacia_Pucon.demo.inventario.repository.LoteRepository;
 import Farmacia_Pucon.demo.inventario.stock.dto.LoteVentaDTO;
-import Farmacia_Pucon.demo.inventario.stock.dto.RegistrarMovimientoRequest;
 import Farmacia_Pucon.demo.inventario.stock.service.LoteService;
 import Farmacia_Pucon.demo.ventas.domain.DetalleVenta;
 import Farmacia_Pucon.demo.ventas.domain.Pago;
@@ -104,19 +103,20 @@ public class VentaServiceImpl implements VentaService {
                         "Paciente no encontrado para id: " + request.getPacienteId()
                 ));
 
-        // ---- Crear entidad Venta inicial ----
-        // Total se calcula después, usando SIEMPRE el precio del lote (HU17)
+        // ---- Crear entidad Venta (sin total todavía) ----
 
         Venta venta = new Venta();
         venta.setFechaHora(LocalDateTime.now());
-        venta.setTotal(BigDecimal.ZERO);
         venta.setEstado("COMPLETADA");
         venta.setUsuario(usuario);
         venta.setPaciente(paciente);
+        venta.setTotal(BigDecimal.ZERO);
 
         venta = ventaRepository.save(venta);
 
-        BigDecimal total = BigDecimal.ZERO;
+        // ---- Calcular total usando SIEMPRE el precio del lote ----
+
+        BigDecimal totalVenta = BigDecimal.ZERO;
 
         // ---- Crear DetalleVenta por cada ítem + validar/descontar stock ----
 
@@ -129,22 +129,23 @@ public class VentaServiceImpl implements VentaService {
                 );
             }
 
+            // 1) Buscar lote (lo sigues usando para precio y detalle)
             Lote lote = loteRepository.findById(itemReq.getLoteId())
                     .orElseThrow(() -> new ResponseStatusException(
                             HttpStatus.NOT_FOUND,
                             "Lote no encontrado para id: " + itemReq.getLoteId()
                     ));
 
-            // 🔥 HU17: el precio de venta debe venir DESDE el lote, no desde el request
-            BigDecimal precioLote = lote.getPrecioUnitario();
-            if (precioLote == null || precioLote.compareTo(BigDecimal.ZERO) <= 0) {
+            // 2) TOMAMOS EL PRECIO DESDE EL LOTE
+            BigDecimal precioUnitario = lote.getPrecioUnitario();
+            if (precioUnitario == null || precioUnitario.compareTo(BigDecimal.ZERO) <= 0) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "El lote " + lote.getCodigoLote() + " no tiene un precio de venta válido"
+                        "El lote " + lote.getCodigoLote() + " no tiene un precioUnitario válido"
                 );
             }
 
-            // Validar stock
+            // (opcional) validar stock aquí, si quieres mantener la validación en ventas
             if (lote.getCantidadDisponible() < itemReq.getCantidad()) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
@@ -154,42 +155,41 @@ public class VentaServiceImpl implements VentaService {
                 );
             }
 
-            // Descontar stock del lote
-            int nuevoStock = lote.getCantidadDisponible() - itemReq.getCantidad();
-            lote.setCantidadDisponible(nuevoStock);
-            loteRepository.save(lote);
+            // 3) Delegar el descuento de stock + kardex al módulo de inventario (HU27)
+            LoteVentaDTO loteVentaDTO = new LoteVentaDTO();
+            loteVentaDTO.setLoteId(lote.getId());
+            loteVentaDTO.setCodigoLote(lote.getCodigoLote());
+            loteVentaDTO.setMedicamento(lote.getMedicamento().getNombreComercial());
+            loteVentaDTO.setCantidadVendida(itemReq.getCantidad());
+            loteVentaDTO.setFechaVencimiento(lote.getFechaVencimiento());
 
-            loteService.registrarMovimiento(new RegistrarMovimientoRequest(
-                    lote.getId(),
-                    itemReq.getCantidad(),
-                    "SALIDA",
-                    "Venta #" + venta.getId() + " – Lote " + lote.getCodigoLote()
-            ));
+            loteService.registrarSalidaPorVenta(
+                    loteVentaDTO,
+                    venta.getId(),          // referencia para HU27
+                    usuario.getId()         // usuario que realizó la venta
+            );
 
-            // Crear detalle
+            // 4) Crear detalle de venta (igual que antes)
             DetalleVenta detalle = new DetalleVenta();
             detalle.setVenta(venta);
             detalle.setLote(lote);
             detalle.setCantidad(itemReq.getCantidad());
-            detalle.setPrecioUnitario(precioLote);
+            detalle.setPrecioUnitario(precioUnitario);
 
-            BigDecimal subtotal = precioLote.multiply(BigDecimal.valueOf(itemReq.getCantidad()));
+            BigDecimal subtotal = precioUnitario
+                    .multiply(BigDecimal.valueOf(itemReq.getCantidad()));
             detalle.setSubtotal(subtotal);
 
-            detalleVentaRepository.save(detalle);
+            totalVenta = totalVenta.add(subtotal);
 
-            // Acumular total
-            total = total.add(subtotal);
+            detalleVentaRepository.save(detalle);
         }
 
-        // Actualizamos el total real de la venta (precio desde lote)
-        venta.setTotal(total);
-        venta = ventaRepository.save(venta);
+        // ---- Setear total calculado y guardar venta ----
+        venta.setTotal(totalVenta);
+        ventaRepository.save(venta);
 
-        // ---- Registrar pagos + calcular vuelto efectivo ----
-
-        BigDecimal totalPagado = BigDecimal.ZERO;
-        BigDecimal totalEfectivo = BigDecimal.ZERO;
+        // ---- Registrar pagos ----
 
         for (PagoRequest pagoReq : request.getPagos()) {
 
@@ -201,12 +201,6 @@ public class VentaServiceImpl implements VentaService {
                 );
             }
 
-            totalPagado = totalPagado.add(pagoReq.getMonto());
-
-            if ("EFECTIVO".equalsIgnoreCase(pagoReq.getMetodoPago())) {
-                totalEfectivo = totalEfectivo.add(pagoReq.getMonto());
-            }
-
             Pago pago = new Pago();
             pago.setVenta(venta);
             pago.setMonto(pagoReq.getMonto());
@@ -215,27 +209,6 @@ public class VentaServiceImpl implements VentaService {
 
             pagoRepository.save(pago);
         }
-
-        // Validar que los pagos cubren el total de la venta
-        if (totalPagado.compareTo(total) < 0) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Los pagos no cubren el total de la venta. Total: " + total +
-                            ", pagado: " + totalPagado
-            );
-        }
-
-        // Calcular vuelto solo si existe pago en efectivo y el total pagado supera el total
-        BigDecimal vueltoEfectivo = BigDecimal.ZERO;
-
-        if (totalEfectivo.compareTo(BigDecimal.ZERO) > 0 &&
-                totalPagado.compareTo(total) > 0) {
-            vueltoEfectivo = totalPagado.subtract(total);
-        }
-
-        // Guardar vuelto efectivo en la venta (asegúrate de tener este campo en la entidad Venta)
-        venta.setVueltoEfectivo(vueltoEfectivo);
-        venta = ventaRepository.save(venta);
 
         // Recargar venta desde BD con detalles y pagos ya asociados
         Venta ventaGuardada = ventaRepository.findById(venta.getId())
@@ -317,10 +290,6 @@ public class VentaServiceImpl implements VentaService {
         comprobante.setDetalles(detallesDTO);
         comprobante.setPagos(pagosDTO);
 
-        // Si quieres mostrar el vuelto en el comprobante, puedes agregar el campo en el DTO
-        // y mapearlo aquí:
-        comprobante.setVueltoEfectivo(venta.getVueltoEfectivo());
-
         return comprobante;
     }
 
@@ -350,9 +319,6 @@ public class VentaServiceImpl implements VentaService {
 
         dto.setDetalles(detalles);
         dto.setPagos(pagos);
-
-        // Si agregas vueltoEfectivo al DTO:
-        dto.setVueltoEfectivo(venta.getVueltoEfectivo());
 
         return dto;
     }
@@ -399,5 +365,4 @@ public class VentaServiceImpl implements VentaService {
             return dto;
         }).collect(Collectors.toList());
     }
-
 }

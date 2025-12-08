@@ -2,6 +2,7 @@ package Farmacia_Pucon.demo.inventario.ingreso.service.impl;
 
 import Farmacia_Pucon.demo.inventario.domain.Lote;
 import Farmacia_Pucon.demo.inventario.domain.Medicamento;
+import Farmacia_Pucon.demo.inventario.domain.MovimientoInventario;
 import Farmacia_Pucon.demo.inventario.ingreso.domain.DetalleIngreso;
 import Farmacia_Pucon.demo.inventario.ingreso.domain.Ingreso;
 import Farmacia_Pucon.demo.inventario.ingreso.dto.CrearIngresoRequest;
@@ -89,10 +90,10 @@ public class IngresoServiceImpl implements IngresoService {
             lote.setStockInicial(detReq.getCantidad());
             lote.setCantidadDisponible(detReq.getCantidad());
             lote.setPrecioUnitario(detReq.getPrecioCompra());
-            lote.setStockMinimo(0); //
+            lote.setStockMinimo(0);
             lote.setActivo(true);
 
-            BigDecimal precioUnitario = detReq.getPrecioCompra();  // ya es BigDecimal
+            BigDecimal precioUnitario = detReq.getPrecioCompra();
             lote.setPrecioUnitario(precioUnitario);
 
             BigDecimal precioTotal = precioUnitario.multiply(

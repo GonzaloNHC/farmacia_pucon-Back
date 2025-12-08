@@ -17,5 +17,7 @@ public interface MovimientoInventarioRepository extends JpaRepository<Movimiento
 
     List<MovimientoInventario> findAllByOrderByFechaHoraDesc();
 
-    List<MovimientoInventario> findByLote_Medicamento_Id(Long medicamentoId);
+    /*List<MovimientoInventario> findByLote_Medicamento_Id(Long medicamentoId);*/
+
+    List<MovimientoInventario> findByMedicamento_Id(Long medicamentoId);
 }

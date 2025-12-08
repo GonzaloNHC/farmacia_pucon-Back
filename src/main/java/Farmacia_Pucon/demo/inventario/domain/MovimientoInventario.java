@@ -1,5 +1,6 @@
 package Farmacia_Pucon.demo.inventario.domain;
 
+import Farmacia_Pucon.demo.authentication.usuarios.domain.User;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -23,12 +24,17 @@ public class MovimientoInventario {
     @Column(nullable = false)
     private Integer cantidad;
 
-
     @Column(nullable = false)
     private String tipo;
     private String referencia;
 
-    private String usuario;
+    @ManyToOne
+    @JoinColumn(name = "usuario_id")
+    private User usuario;
+
+    @ManyToOne
+    @JoinColumn(name = "medicamento_id", nullable = false)
+    private Medicamento medicamento;
 
     // ===== Getters y Setters =====
 
@@ -76,11 +82,19 @@ public class MovimientoInventario {
         this.referencia = referencia;
     }
 
-    public String getUsuario() {
+    public Medicamento getMedicamento() {
+        return medicamento;
+    }
+
+    public void setMedicamento(Medicamento medicamento) {
+        this.medicamento = medicamento;
+    }
+
+    public User getUsuario() {
         return usuario;
     }
 
-    public void setUsuario(String usuario) {
+    public void setUsuario(User usuario) {
         this.usuario = usuario;
     }
 }
